@@ -2,108 +2,67 @@
  */
 
 #include <xeroskernel.h>
-#include <i386.h>
 
+extern void _ISREntryPoint(void);
+extern void _CommonEntryPoint(void);
+extern void _TimerEntryPoint(void);
 
-void _KernelEntryPoint(void);
-void _TimerEntryPoint(void);
+static void* k_stack;
+static unsigned int ESP;
+static int rc;
+static int interrupt;
 
-static unsigned int        saveESP;
-static unsigned int        rc;
-static int                 trapNo;
-static long                args;
-
-int contextswitch( pcb *p ) {
-/**********************************/
-
-    /* keep every thing on the stack to simplfiy gcc's gesticulations
-     */
-
-    saveESP = p->esp;
-    rc = p->ret; 
- 
-    /* In the assembly code, switching to process
-     * 1.  Push eflags and general registers on the stack
-     * 2.  Load process's return value into eax
-     * 3.  load processes ESP into edx, and save kernel's ESP in saveESP
-     * 4.  Set up the process stack pointer
-     * 5.  store the return value on the stack where the processes general
-     *     registers, including eax has been stored.  We place the return
-     *     value right in eax so when the stack is popped, eax will contain
-     *     the return value
-     * 6.  pop general registers from the stack
-     * 7.  Do an iret to switch to process
-     *
-     * Switching to kernel
-     * 1.  Push regs on stack, set ecx to 1 if timer interrupt, jump to common
-     *     point.
-     * 2.  Store request code in ebx
-     * 3.  exchange the process esp and kernel esp using saveESP and eax
-     *     saveESP will contain the process's esp
-     * 4a. Store the request code on stack where kernel's eax is stored
-     * 4b. Store the timer interrupt flag on stack where kernel's eax is stored
-     * 4c. Store the the arguments on stack where kernel's edx is stored
-     * 5.  Pop kernel's general registers and eflags
-     * 6.  store the request code, trap flag and args into variables
-     * 7.  return to system servicing code
-     */
- 
-    __asm __volatile( " \
-        pushf \n\
-        pusha \n\
-        movl    rc, %%eax    \n\
-        movl    saveESP, %%edx    \n\
-        movl    %%esp, saveESP    \n\
-        movl    %%edx, %%esp \n\
-        movl    %%eax, 28(%%esp) \n\
-        popa \n\
-        iret \n\
-   _TimerEntryPoint: \n\
-        cli   \n\
-        pusha \n\
-        movl    $1, %%ecx \n\
-        jmp     _CommonJumpPoint \n \
-   _KernelEntryPoint: \n\
-        cli \n\
-        pusha  \n\
-        movl   $0, %%ecx \n\
-   _CommonJumpPoint: \n \
-        movl    %%eax, %%ebx \n\
-        movl    saveESP, %%eax  \n\
-        movl    %%esp, saveESP  \n\
-        movl    %%eax, %%esp  \n\
-        movl    %%ebx, 28(%%esp) \n\
-        movl    %%ecx, 24(%%esp)\n		\
-        movl    %%edx, 20(%%esp) \n\
-        popa \n\
-        popf \n\
-        movl    %%eax, rc \n\
-        movl    %%ecx, trapNo \n\
-        movl    %%edx, args \n\
-        "
-        : 
-        : 
-        : "%eax", "%ebx", "%edx"
-    );
-
-    /* save esp and read in the arguments
-     */
-    p->esp = saveESP;
-    if( trapNo ) {
-	/* return value (eax) must be restored, (treat it as return value) */
-	p->ret = rc;
-	rc = SYS_TIMER;
-    } else {
-        p->args = args;
-    }
-    return rc;
+void context_init(void) {
+	set_evec(80, (unsigned long)_ISREntryPoint);
+	set_evec(32, (unsigned long)_TimerEntryPoint);
 }
 
-void contextinit( void ) {
-/*******************************/
-  kprintf("Context init called\n");
-  set_evec( KERNEL_INT, (int) _KernelEntryPoint );
-  set_evec( TIMER_INT,  (int) _TimerEntryPoint );
-  initPIT( 100 );
+system_call contextswitch(struct PCB* p) {
+	curr_running_process = p;
+	p->state = RUNNING;
+	p->context->eax = p->rc;
+	ESP = p->context->esp;
+	__asm__ volatile(
+		"pushf;"
+		"pusha;"
+		"movl %%esp, k_stack;"
+		"movl ESP, %%esp;"
+		"popa;"
+		"iret;"
+	"_TimerEntryPoint:" 
+		"cli;" // turn off interrupts
+		"pusha;" // save registers
+		"movl $1, %%ecx;" // indicate interrupt
+		"movl $9, %%eax;" // indicate TIMER_INT
+		"jmp _CommonEntryPoint;"
+	"_ISREntryPoint:"
+		"cli;"
+		"pusha;"
+		"movl $0, %%ecx;" // indicate syscall
+	"_CommonEntryPoint:"
+		"movl %%esp, ESP;"
+		"movl k_stack, %%esp;"
+		"movl %%ecx, interrupt;"
+		"movl %%eax, rc;" // move return value to rc
+		"popa;"
+		"popf;"
+	:
+	: 
+	:"%eax", "%ecx"
+	); 
+	p->context = (struct context_frame*)ESP;
+	p->context->esp = ESP;
+	#ifdef PROCESS_FLOW_LOG
+		kprintf("Switched back to kernel from process %d. Retuning to dispatcher\n", p->pid);
+	#endif
 
+	if (interrupt) {
+		// preserve the value of eax so we can restore it later
+		p->rc = p->context->eax;
+	}
+
+	if (FALSE)
+		k_stack = 0;
+
+	return rc;
 }

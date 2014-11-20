@@ -6,12 +6,14 @@
 #include <stdarg.h>
 
 static  void	kputc(int, unsigned char);
+static  void    _pause(int);
 
 
 /*------------------------------------------------------------------------
  *  kprintf  --  kernel printf: formatted, unbuffered output to CONSOLE
  *------------------------------------------------------------------------
  */
+
 int kprintf(char * fmt, ...)
 {
   //	unsigned int	saveof;
@@ -26,7 +28,36 @@ int kprintf(char * fmt, ...)
 }
 
 
+int kprintf_log(int log_level, int pause_length, char* fmt, ...) 
+{
+	if (log_level == 0) {
+		return 1;
+	}
+ //	unsigned int	saveof;
 
+  va_list ap;
+  va_start(ap, fmt);
+  
+    //  _doprnt(fmt, &args, kputc, 0);
+
+    _doprnt(fmt, (void *) ap,  kputc, 0);
+
+	if (pause_length > NONE)
+		_pause(pause_length);
+
+	return 1;
+}
+
+void _pause(int pause_length) {
+	int i;
+	int counter;
+	if (pause_length == SHORT)
+		counter = 2000000;
+	else 
+		counter = 8000000;
+	for (i = 0; i < counter; i++);
+	return;
+}
 
 
 /*-

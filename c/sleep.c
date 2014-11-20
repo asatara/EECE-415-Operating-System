@@ -3,78 +3,50 @@
 
 #include <xeroskernel.h>
 
+void sleep(struct PCB* process) {
 
-#define MILLISECONDS_TICK 10
-static pcb	*sleepQ;
+	kprintf_log(SLEEP_LOG, NONE, "Adding pid %d to sleep queue\n", process->pid);
+	if (sleep_queue == NULL) {
+		sleep_queue = process;
+		return;
+	}
 
+	struct PCB* iterator = sleep_queue;
+	struct PCB* prev = NULL;
 
-// Len is the length of time to sleep
+	while (iterator != NULL) {
+		if (process->ticks < iterator->ticks) {
+			break;
+		}
+		prev = iterator;
+		iterator = iterator->next;
+	}
 
-void	sleep( pcb *p, int len ) {
-/****************************************/
-
-    pcb	*tmp;
-
-
-    if( len < 1 ) {
-        ready( p );
-        return;
-    }
-
-    // Convert the length of time to sleep in ticks
-    // each tick is 10ms 
-    len = len / MILLISECONDS_TICK;
-
-    p->state = STATE_SLEEP;
-    p->next = NULL;
-    p->prev = NULL;
-    if( !sleepQ ) {
-        sleepQ = p;
-        p->sleepdiff = len;
-    } else if( sleepQ->sleepdiff > len ) {
-        p->next = sleepQ;
-        sleepQ->sleepdiff -= len;
-        p->sleepdiff = len;
-        sleepQ = p;
-    } else {
-        len -= sleepQ->sleepdiff;
-        for( tmp = sleepQ; tmp->next; tmp = tmp->next ) {
-            if( len < tmp->next->sleepdiff ) {
-                break;
-            } else {
-                len -= tmp->next->sleepdiff;
-            }
-        }
-
-        p->next = tmp->next;
-        p->prev = tmp;
-        p->sleepdiff = len;
-        tmp->next = p;
-        if( p->next ) {
-            p->next->prev = p;
-            p->next->sleepdiff -= len;
-        }
-    }
+	if (prev == NULL) {
+		process->next = iterator;
+		sleep_queue = process;
+	} else {
+		prev->next = process;
+		process->next = iterator;
+	}
+	return;
 }
 
+void tick(void) {
+	if (sleep_queue == NULL)
+		return;
 
-extern void	tick( void ) {
-/****************************/
-
-    pcb	*tmp;
-
-    if( !sleepQ ) {
-        return;
-    }
-
-    for( sleepQ->sleepdiff--; sleepQ && !sleepQ->sleepdiff; ) {
-        tmp = sleepQ;
-        sleepQ = tmp->next;
-
-        tmp->state = STATE_READY;
-        tmp->next = NULL;
-        tmp->prev = NULL;
-        tmp->ret = 0;
-        ready( tmp );
-    }
+	struct PCB* iterator = sleep_queue;
+	while (iterator != NULL) {
+		iterator->ticks--;
+		if (iterator->ticks < 0) {
+			kprintf_log(SLEEP_LOG, 0, "PID %d finished sleeping. moving to ready queue\n", iterator->pid);
+			sleep_queue = iterator->next;
+			iterator->next = NULL;
+			addToQueue(&ready_queue, iterator);
+			iterator = sleep_queue;
+		} else {
+			iterator = iterator->next;
+		}
+	}
 }

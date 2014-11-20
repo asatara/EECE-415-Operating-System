@@ -9,23 +9,6 @@ extern	int	end( void );    /* end of kernel image, use &end        */
 extern  long	freemem; 	/* start of free memory (set in i386.c) */
 extern char	*maxaddr;	/* max memory address (set in i386.c)	*/
 
-
-
-/*------------------------------------------------------------------------
- *  The idle process 
- *------------------------------------------------------------------------
- */
-static void idleproc( void )	
-{
-    int	i;
-    //    kprintf("I");
-    for( i = 0; ; i++ ) {
-       sysyield();
-    }
-}
-
-
-
 /************************************************************************/
 /***				NOTE:				      ***/
 /***								      ***/
@@ -40,36 +23,52 @@ static void idleproc( void )
  *  The init process, this is where it all begins...
  *------------------------------------------------------------------------
  */
+ 
+// initially root and idle process
+void (*root_process_entry)(void) = root;
+void (*idle_process_entry)(void) = idle;
+
+void init_queues(void);
+void init_pcb_table(void);
+void init_port_table(void);
+
 void initproc( void )				/* The beginning */
 {
-	kprintf( "\n\nCPSC 415, 2014W1 \n32 Bit Xeros 1.1\nLocated at: %x to %x\n", &entry, &end ); 
-        kprintf( "Partial solution to A2.\n");
-        /* Your code goes here */
-
-        kprintf("Max addr is %d %x\n", maxaddr, maxaddr);
-
-        kmeminit();
-        kprintf("Memory initialized.\n");
-
-        dispatchinit();
-        kprintf("Dispatcher initialized.\n");
-  
-        contextinit();
-        kprintf("Context initialized.\n");
-
-	kprintf("Creating Idle Process\n");
-	create(idleproc, PROC_STACK);
-
-	kprintf("Creating Root Process\n");
-        create( root, PROC_STACK );
-
-	kprintf("System initialization completed\nSystem Starting\n");
-  
-        dispatch();
-  
-        kprintf("Returned to init, you should never get here!\n");
-
-        /* This code should never be reached after you are done */
-	for(;;); /* loop forever */
+	kmeminit();
+	context_init();
+    init_queues();
+	init_pcb_table();
+	init_port_table();
+	initPIT(100);
+	create(root_process_entry, 0x1000);
+	create(idle_process_entry, 0x1000);
+	dispatch();
 }
+
+void init_queues(void) {
+    ready_queue = NULL;
+    blocked_queue = NULL;
+}
+
+void init_pcb_table(void) {
+	int i;
+	for (i = 0; i < MAX_NUMBER_OF_PCBS; i++) {
+		global_process_table[i].pid = -1;
+		global_process_table[i].state = STOPPED;
+		global_process_pid_table[i] = -1;
+	}
+}
+
+void init_port_table(void) {
+	int i;
+	for (i = 0; i < MAX_NUMBER_OF_PORTS; i++) {
+		global_port_table[i].in_use = FALSE;
+        global_port_table[i].next = NULL; // Not part of a proc's linked list of ports.
+	}
+}
+
+
+
+
+
 
