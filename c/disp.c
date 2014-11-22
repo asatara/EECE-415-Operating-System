@@ -171,6 +171,7 @@ extern void dispatch(void) {
 				va_list argv = *argp;
 				void* old_sp = va_arg(argv, void*);
 				process->context->esp = (int)old_sp;
+				process->rc = *((int*)(old_sp - 1));
 				break;
 			}
 			case(SYS_SIG_WAIT): {

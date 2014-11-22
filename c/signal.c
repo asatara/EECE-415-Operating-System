@@ -20,32 +20,35 @@ int signal(int pid, int signalNum) {
 	if (signalNum < 0 || signalNum > MAX_NUMBER_OF_SIGS - 1)
 		return -2;
 
-
+	
 	if (pcb->state == BLOCKED) {
 		struct PCB* result = removeFromQueue(&pcb->blocked_queue, pcb);
 		if (result == NULL) {
 			kprintf("ERROR: pcb status is blocked by cannot find pcb in blocked queue\n");			
 		}
 
-		pcb->state = READY;
 		pcb->rc = -452;
+		pcb->state = READY;
+		addToQueue(&ready_queue, pcb);
 	}
 
+
+	
 	if (pcb->state == SIG_WAIT) {
 		pcb->state = READY;
-		pcb->rc = signalNum;
 		addToQueue(&ready_queue, pcb);
-
+		pcb->rc = signalNum;
 	}
 
 	// toggle signal bit on
 	pcb->signal_controller |= 1 << signalNum;
+
 	return 0;
 
 }
 
 void prepare_sigtramp(struct PCB* pcb) {
-	int signal = hibit(pcb->signal_controller) - 1; // get highest bit
+	int signal = hibit(pcb->signal_controller); // get highest bit
 	pcb->signal_controller &= ~(1 << signal); // toggle signal off
 	void* handler = pcb->signal_table[signal];
 	kprintf("Preparing for signal %d\n", signal);
@@ -53,6 +56,10 @@ void prepare_sigtramp(struct PCB* pcb) {
 	old_sp = (int*)pcb->context->esp;
 
 	int* sp = old_sp;
+
+	// push return value
+	sp -= 1;
+	*sp = pcb->rc;
 
 	// push old_sp
 	sp -= 1;
@@ -100,5 +107,5 @@ int hibit(unsigned int n) {
     n |= (n >>  4);
     n |= (n >>  8);
     n |= (n >> 16);
-    return n - (n >> 1);
+    return n - (n >> 1) - 1;
 }

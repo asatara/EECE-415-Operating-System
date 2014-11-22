@@ -10,6 +10,8 @@ void root(void) {
 	int pid = sysgetpid();
 	sysputs2("Root (Process %d) is alive.\n", pid);
 	syscreate(producer, 4000);
+	sysportcreate(10);
+	sysyield();
 	void (*old_handler)(void*);
 	void (*new_handler)(void*) = handler;
 	void (*new_handler2)(void*) = handler2;
@@ -17,7 +19,8 @@ void root(void) {
 	kprintf("syssighandler returned: %d\n", result);
 	result = syssighandler(0, new_handler2, &old_handler);
 	kprintf("syssighandler returned: %d\n", result);
-	result = syssigwait();
+	void* buff;
+	result = sysportsend(5, buff);
 	kprintf("Process 0: syssigwait returned: %d\n", result);
 	for(;;);
 	sysputs("Done\n");
@@ -32,6 +35,8 @@ void idle(void) {
 extern void producer(void) {
 	int pid = sysgetpid();
 	sysputs2("Process %d is alive.\n", pid);
+	sysportcreate(5);
+	sysyield();
 	int result = syskill(0, 0);
 	kprintf("syskill returned: %d\n", result);
 	result = syskill(0, 1);

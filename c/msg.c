@@ -72,7 +72,6 @@ int ksendtoport(int portNumber, void* msg, struct PCB *sending_proc) {
 			sending_proc->msg = msg;
 			addToQueue(&recv_port->blocked_list, sending_proc);
 			sending_proc->blocked_queue = recv_port->blocked_list;
-			sending_proc->state = BLOCKED;
 			return -2;
 		}
 
@@ -114,6 +113,7 @@ int krecvfromport(int portNumber, void **msg, struct PCB *recv_proc) {
 		else {
 			kprintf_log(PORT_LOG, 0, "No sender available. Blocking pid %d\n", recv_proc->pid);
 			recv_proc->msg = msg;
+			recv_proc->state = BLOCKED;
 			addToQueue(&blocked_queue, recv_proc);
 			recv_proc->blocked_queue = blocked_queue;
 			return -2;
