@@ -75,7 +75,12 @@ typedef enum {
 	SYS_SLEEP,
 	TIMER_INT,
     SYS_GET_PID,
-    SYS_KILL
+    SYS_KILL,
+    SYSOPEN,
+    SYSCLOSE,
+    SYSWRITE,
+    SYSREAD,
+    SYSIOCTL
 } system_call;
 
 // used for testing
@@ -96,6 +101,7 @@ struct PCB {
     struct Port* ports; // Linked list of ports owned by the process.
 	int ticks; // number of sleep ticks left when sleeping
 	void* msg; // used for IPC
+    
 };
 
 struct Port {
@@ -104,6 +110,20 @@ struct Port {
     struct Port* next;
 	struct PCB* owner;
 	struct PCB* blocked_list; // list of processes blocked waiting for this port
+};
+
+/* This struct represents a device in the 'upper half' of the device driver.
+ * DII (device independant interface) functions are mapped to upper half
+ * device specific functions.
+ */
+struct devsw {
+    int dvnum;
+    char *dvname;
+    int (*dvopen) ();
+    int (*dvclose) ();
+    int (*dvread) ();
+    int (*dvwrite) ();
+    int (*dvioctl) ();
 };
 
 // for demo
@@ -190,6 +210,11 @@ extern int   sysportrecv(int port, void **msg);
 extern int   syskill(int pid);
 extern unsigned int syssleep(unsigned int milliseconds);
 extern unsigned int sysgetpid(void);
+extern int sysopen(int device_no);
+extern int sysclose(int fd);
+extern int syswrite(int fd, void *buff, int bufflen);
+extern int sysread(int fd, void *buff, int bufflen);
+extern int sysioctl(int fg, unsigned long command, ...);
 
 
 // Defined in msg.c
@@ -204,6 +229,13 @@ extern struct Port global_port_table[MAX_NUMBER_OF_PORTS];
 // Defined in sleep.c
 extern void sleep(struct PCB* process);
 extern void tick(void);
+
+// Defined in di_calls.c
+extern void di_open(void);
+extern void di_close(void);
+extern void di_write(void);
+extern void di_read(void);
+extern void di_ioctl(void);
 
 
 // The global process table has 32 spaces so there can be 32 process in the system at once.
