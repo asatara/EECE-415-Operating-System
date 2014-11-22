@@ -58,6 +58,12 @@ void init_pcb_table(void) {
 		global_process_table[i].pid = -1;
 		global_process_table[i].state = STOPPED;
 		global_process_pid_table[i] = -1;
+
+        // Initialize all entries in fdt to zero.
+        int k;
+        for(k = 0; k < FDT_SIZE; k++) {
+            global_process_table[i].fdt[k] = 0;
+        }
 	}
 }
 

@@ -79,13 +79,13 @@ int syswrite(int fd, void *buff, int bufflen) {
     return syscall(SYSWRITE, fd, buff, bufflen);
 }
 
-int sysread(int fg, void *buff, int bufflen) {
+int sysread(int fd, void *buff, int bufflen) {
     return syscall(SYSREAD, fd, buff, bufflen);
 }
 
-int sysioctl(int fd, unsigned long command, ...) {
-    return syscall(SYSIOCTL, fd, command, ...);
-}
+//int sysioctl(int fd, unsigned long command, ...) {
+//    return syscall(SYSIOCTL, fd, command, ...);
+//}
 
 int syscall(int call, ...) {
 	int result;

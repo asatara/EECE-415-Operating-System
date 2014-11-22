@@ -99,11 +99,11 @@ typedef enum {
 typedef struct {
     int dvnum;
     char *dvname;
-    int (*dvopen) ();  // TODO: decide on the parameters for these function and add them in.
-    int (*dvclose) ();
-    int (*dvread) ();
-    int (*dvwrite) ();
-    int (*dvioctl) ();
+    int (*dvopen) (void);  // TODO: decide on the parameters for these function and add them in.
+    int (*dvclose) (void);
+    int (*dvread) (void);
+    int (*dvwrite) (void);
+    int (*dvioctl) (void);
 } devsw;
 
 struct PCB {
@@ -116,7 +116,7 @@ struct PCB {
     struct Port* ports; // Linked list of ports owned by the process.
 	int ticks; // number of sleep ticks left when sleeping
 	void* msg; // used for IPC
-    devsw fdt[FDT_SIZE];  // Fixed size file descriptor table.
+    devsw* fdt[FDT_SIZE];  // Fixed size file descriptor table.
 };
 
 struct Port {
@@ -232,7 +232,7 @@ extern void sleep(struct PCB* process);
 extern void tick(void);
 
 // Defined in di_calls.c
-extern void di_open(void);
+extern int di_open(struct PCB* pcb, int device_no);
 extern void di_close(void);
 extern void di_write(void);
 extern void di_read(void);

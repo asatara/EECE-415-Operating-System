@@ -153,6 +153,11 @@ extern void dispatch(void) {
             }
             case(SYSOPEN): {
                 kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSOPEN.\n", process->pid);
+                va_list* argp = (va_list*)process->context->edx;
+				va_list argv = *argp;
+				int device_no = va_arg(argv, int);
+                process->rc = di_open(process, device_no);
+                request = contextswitch(process);
                 break;
             }
             case(SYSCLOSE): {
