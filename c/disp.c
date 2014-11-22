@@ -162,6 +162,11 @@ extern void dispatch(void) {
             }
             case(SYSCLOSE): {
                 kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSCLOSE.\n", process->pid);
+                va_list* argp = (va_list*)process->context->edx;
+				va_list argv = *argp;
+				int fd = va_arg(argv, int);
+                process->rc = di_close(process, fd);
+                request = contextswitch(process);
                 break;
             }
             case(SYSWRITE): {

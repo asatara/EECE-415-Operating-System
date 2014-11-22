@@ -233,7 +233,7 @@ extern void tick(void);
 
 // Defined in di_calls.c
 extern int di_open(struct PCB* pcb, int device_no);
-extern void di_close(void);
+extern int di_close(struct PCB *pcb, int fd);
 extern void di_write(void);
 extern void di_read(void);
 extern void di_ioctl(void);

@@ -23,8 +23,17 @@ int di_open(struct PCB* pcb, int device_no) {
     return -1;
 }
 
-void di_close(void) {
-
+/* Return 0 if the file is successfully closed. Return -1 on error.
+ */
+int di_close(struct PCB *pcb, int fd) {
+    if(fd >= 0 && fd < FDT_SIZE) {
+        pcb->fdt[fd] = 0;
+        printFDT(pcb);
+        return 0;
+    } else {
+        return -1;
+    }
+    
 }
 
 void di_write(void) {
@@ -44,7 +53,7 @@ void di_ioctl(void) {
 
 // Translate the user supplied device_no into a fd.
 int getFdbyDeviceno(int device_no) {
-    if(device_no >= 0 || device_no < DEVICE_TABLE_SIZE) {
+    if(device_no >= 0 && device_no < DEVICE_TABLE_SIZE) {
         return device_no;
     } else {
         return -1;
