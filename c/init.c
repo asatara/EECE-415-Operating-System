@@ -31,9 +31,10 @@ void (*idle_process_entry)(void) = idle;
 void init_queues(void);
 void init_pcb_table(void);
 void init_port_table(void);
+void init_device_tabel(void);
 
-void initproc( void )				/* The beginning */
-{
+/* The beginning */
+void initproc( void ) {
 	kmeminit();
 	context_init();
     init_queues();
@@ -42,6 +43,7 @@ void initproc( void )				/* The beginning */
 	initPIT(100);
 	create(root_process_entry, 0x1000);
 	create(idle_process_entry, 0x1000);
+    init_device_tabel();
 	dispatch();
 }
 
@@ -65,6 +67,12 @@ void init_port_table(void) {
 		global_port_table[i].in_use = FALSE;
         global_port_table[i].next = NULL; // Not part of a proc's linked list of ports.
 	}
+}
+
+
+void init_device_tabel(void) {
+    devsw device_table[DEVICE_TABLE_SIZE];
+    // TODO: add the two variations of the keyboard into this.
 }
 
 

@@ -151,6 +151,26 @@ extern void dispatch(void) {
                 request = contextswitch(process);
                 break;
             }
+            case(SYSOPEN): {
+                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSOPEN.\n", process->pid);
+                break;
+            }
+            case(SYSCLOSE): {
+                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSCLOSE.\n", process->pid);
+                break;
+            }
+            case(SYSWRITE): {
+                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSWRITE.\n", process->pid);
+                break;
+            }
+            case(SYSREAD): {
+                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSREAD.\n", process->pid);
+                break;
+            }
+            case(SYSIOCTL): {
+                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSIOCTL.\n", process->pid);
+                break;
+            }
 			default: {
 				kprintf("Incorrect SYS_CALL %d. Returning to process.\n", request);
 				PAUSE;
