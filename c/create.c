@@ -50,12 +50,17 @@ int create(void (*func)(void), int stack_size) {
 	pcb->context->eax = 0;
 	pcb->context->iret_eip = (unsigned int)func;
 	pcb->context->iret_cs = getCS();
-	pcb->context->eflags = 0x00003200;
-	//pcb->context->eflags = 0;
+	//pcb->context->eflags = 0x00003200;
+	pcb->context->eflags = 0;
 	pcb->state = READY;
 	pcb->pid = process_id;
 	pcb->next = NULL;
     pcb->ports = NULL;
+	pcb->signal_controller = 0;
+	int i;
+	for (i = 0; i < MAX_NUMBER_OF_SIGS; i++) {
+		pcb->signal_table[i] = NULL;
+	}
 
 	// idle process doesn't live in ready queue
 	if (func == idle) {

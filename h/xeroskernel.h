@@ -22,13 +22,14 @@ typedef	char    Bool;   /* Boolean type                  */
 
 #define MAX_NUMBER_OF_PCBS  0xf
 #define MAX_NUMBER_OF_PORTS 0xf
+#define MAX_NUMBER_OF_SIGS 0x20
 
 #define PAUSE int z;for(z=0;z < 2000000;z++)
 #define PAUSE10 int y;for(y=0;y < 10000000;y++)
 
 // Logging levels
 #define MEM_LOG    0
-#define DISP_LOG   0
+#define DISP_LOG   1
 #define FLOW_LOG   0
 #define QUEUE_lOG  0
 #define TABEL_LOG  0
@@ -37,6 +38,7 @@ typedef	char    Bool;   /* Boolean type                  */
 #define PORT_LOG   0
 #define SLEEP_LOG  0
 #define PTR_LOG    0
+#define SIG_LOG    1
 
 
 /* Functions defined by startup code */
@@ -60,7 +62,8 @@ typedef enum {
     READY,
     STOPPED,
     BLOCKED,
-	SLEEP
+	SLEEP,
+	SIG_WAIT
 } Process_state;
 
 typedef enum {
@@ -75,7 +78,10 @@ typedef enum {
 	SYS_SLEEP,
 	TIMER_INT,
     SYS_GET_PID,
-    SYS_KILL
+    SYS_KILL,
+	SYS_SIG_HANDLE,
+	SYS_SIG_RETURN,
+	SYS_SIG_WAIT
 } system_call;
 
 // used for testing
@@ -96,6 +102,9 @@ struct PCB {
     struct Port* ports; // Linked list of ports owned by the process.
 	int ticks; // number of sleep ticks left when sleeping
 	void* msg; // used for IPC
+	struct PCB* blocked_queue; // If blocked, pcb is in this blocked_queue
+	int signal_controller;
+	void* signal_table[MAX_NUMBER_OF_SIGS];
 };
 
 struct Port {
@@ -164,6 +173,7 @@ extern Bool unblockProcess(struct PCB** queue, int port);
 extern Bool doesProcExist(int pid);
 extern void kkillproc(struct PCB* proc);
 extern void  queue_dump(void);
+extern struct PCB* find_pcb(int pid);
 
 
 // Defined in ctsw.c
@@ -187,9 +197,12 @@ extern int   sysportcreate(int port);
 extern int   sysportdelete(int port);
 extern int   sysportsend(int port, void *msg);
 extern int   sysportrecv(int port, void **msg);
-extern int   syskill(int pid);
 extern unsigned int syssleep(unsigned int milliseconds);
 extern unsigned int sysgetpid(void);
+extern int   syssighandler(int signal, void (*newhandler)(void*), void (**oldhandler)(void*));
+extern void  syssigreturn(void* old_sp);
+extern int   syskill(int pid, int sigNumber);
+extern int   syssigwait(void);
 
 
 // Defined in msg.c
@@ -204,6 +217,11 @@ extern struct Port global_port_table[MAX_NUMBER_OF_PORTS];
 // Defined in sleep.c
 extern void sleep(struct PCB* process);
 extern void tick(void);
+
+// Defined in signal.c
+extern void sigtramp(void (*handler)(void *), void *context, void *old_sp);
+extern int signal(int pid, int signalNum);
+extern void prepare_sigtramp(struct PCB* pcb);
 
 
 // The global process table has 32 spaces so there can be 32 process in the system at once.

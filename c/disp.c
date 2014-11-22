@@ -17,16 +17,19 @@ extern void dispatch(void) {
 	int request;
 	kprintf_log(DISP_LOG, 0, "Entering dispatcher.\n");
 	struct PCB* process = find_next_ready_process();
-	request = contextswitch(process);
 	
 	for(;;) {
+		if (process->signal_controller > 0) {
+			kprintf("Signal detected for pid %d\n", process->pid);
+			prepare_sigtramp(process);
+		}
+		request = contextswitch(process);
 		switch(request) {
 			case(SYS_YIELD): {
 				kprintf_log(DISP_LOG, SHORT, "Process %d requested service SYS_YIELD."
 					" Adding process to ready queue\n",process->pid);
 				addToQueue(&ready_queue, process);
 				process = find_next_ready_process();
-				request = contextswitch(process);
 				break;
 			}
 			case(SYS_CREATE): {
@@ -38,14 +41,12 @@ extern void dispatch(void) {
 				int pid = create(new_process, size);
 				process->rc = pid;
 				kprintf_log(DEMO_LOG, NONE, "Process %d requested service SYS_CREATE. Process %d has been created.\n", process->pid, pid);
-				request = contextswitch(process);
 				break;
 			}
 			case(SYS_STOP): {
 				kprintf_log(DISP_LOG, SHORT, "Process %d requested service SYS_STOP. Terminating process\n", process->pid);
                 kkillproc(process);
 				process = find_next_ready_process();
-				request = contextswitch(process);
 				break;
 			}
 			case(SYS_PUTS): {
@@ -53,7 +54,6 @@ extern void dispatch(void) {
 				va_list argv = *argp;
 				char* str = va_arg(argv, char*);
 				kprintf("%s", str);
-				request = contextswitch(process);
 				break;
 			}
 			case(TIMER_INT): {
@@ -62,7 +62,6 @@ extern void dispatch(void) {
 				addToQueue(&ready_queue, process);
 				process = find_next_ready_process();
 				end_of_intr();
-				request = contextswitch(process);
 				break;
 			}
             case(SYS_PORT_CREATE): {
@@ -71,7 +70,6 @@ extern void dispatch(void) {
 				va_list argv = *argp;
 				int port = va_arg(argv, int);
                 process->rc = kcreateport(port, process);
-				request = contextswitch(process);
                 break;
             }
             case(SYS_PORT_DELETE): {
@@ -80,7 +78,7 @@ extern void dispatch(void) {
 				va_list argv = *argp;
 				int port = va_arg(argv, int);
 				process->rc = kdestroyport(port, process);
-				request = contextswitch(process);
+				
                 break;
             }
             case(SYS_SEND): {
@@ -93,7 +91,6 @@ extern void dispatch(void) {
 				if (process->rc == -2) {
 					process = find_next_ready_process();
 				}
-					request = contextswitch(process);
                 break;
             }
             case(SYS_PORT_RECV): {
@@ -106,7 +103,6 @@ extern void dispatch(void) {
 				if (process->rc == -2) {
 					process = find_next_ready_process();
 				}
-				request = contextswitch(process);
                 break;
             }
 			case(SYS_SLEEP): {
@@ -120,41 +116,75 @@ extern void dispatch(void) {
 					sleep(process);
 					process = find_next_ready_process();
 				}
-				request = contextswitch(process);
 				break;
 			}
             case(SYS_GET_PID): {
 				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_GET_PID.\n", process->pid);
                 process->rc = process->pid;
-                request = contextswitch(process);
                 break;
 			}
             case(SYS_KILL): {
                 kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_KILL.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
-				unsigned int target_pid = va_arg(argv, unsigned int);
-                int ret = -1;
-                if(target_pid == process->pid) {
-                    kprintf("ERROR: Process tried to kill itself!");
-                    ret = -2;
-                } else if(doesProcExist((int)target_pid) == FALSE) {
-                    kprintf("ERROR: Tried to kill a process that doesn't exist!");
-                    dump_gpt();
-                    ret = -1;
-                } else {
-                    kprintf("Killing process %d.\n", target_pid);
-                    kkillproc(find_pcb(target_pid));
-                    ret = 1;
-                }
-                process->rc = ret;
-                request = contextswitch(process);
+				int target_pid = va_arg(argv, int);
+				int signalNum = va_arg(argv, int);
+
+                int ret;;
+				ret = signal(target_pid, signalNum);
+
+				if (ret == -1)
+					process->rc = -90;
+				else if (ret == -2)
+					process->rc = -68;
+				else
+					process->rc = 0;
                 break;
             }
+			case(SYS_SIG_HANDLE): {
+                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SIG_HANDLE.\n", process->pid);
+				va_list* argp = (va_list*)process->context->edx;
+				va_list argv = *argp;
+				int signal = va_arg(argv, int);
+				void (*newhandler)(void*) = va_arg(argv, void*);
+				void (**oldhandler)(void*) = va_arg(argv, void**);
+
+				if (signal < 0 || signal > MAX_NUMBER_OF_SIGS - 1) {
+					process->rc = -1;
+					break;
+				}
+
+				if (newhandler == NULL || newhandler < 0) {
+					process->rc = -2;
+					break;
+				}
+
+				*oldhandler = process->signal_table[signal];
+				process->signal_table[signal] = newhandler;
+				process->rc = 0;
+
+				break;
+			}
+			case(SYS_SIG_RETURN): {
+				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SIG_RETURN.\n", process->pid);
+                va_list* argp = (va_list*)process->context->edx;
+				va_list argv = *argp;
+				void* old_sp = va_arg(argv, void*);
+				process->context->esp = (int)old_sp;
+				break;
+			}
+			case(SYS_SIG_WAIT): {
+				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SIG_WAIT.\n", process->pid);
+				if (process->signal_controller == 0) {
+					process->state = SIG_WAIT;
+					process = find_next_ready_process();
+				}
+				break;
+			}
 			default: {
 				kprintf("Incorrect SYS_CALL %d. Returning to process.\n", request);
 				PAUSE;
-				request = contextswitch(process);
+				
 			}
 		}
 

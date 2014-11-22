@@ -63,9 +63,22 @@ unsigned int sysgetpid(void) {
     return syscall(SYS_GET_PID);
 }
 
-int syskill(int pid) {
-    return syscall(SYS_KILL, pid);
+int syskill(int pid, int sigNumber) {
+    return syscall(SYS_KILL, pid, sigNumber);
 }
+
+int syssighandler(int signal, void (*newhandler)(void*), void (**oldhandler)(void*)) {
+	return syscall(SYS_SIG_HANDLE, signal, newhandler, oldhandler);
+}
+
+void syssigreturn(void* old_sp) {
+	syscall(SYS_SIG_RETURN, old_sp);
+}
+
+int syssigwait(void) {
+	return syscall(SYS_SIG_WAIT);
+}
+
 
 int syscall(int call, ...) {
 	int result;
