@@ -22,6 +22,8 @@ typedef	char    Bool;   /* Boolean type                  */
 
 #define MAX_NUMBER_OF_PCBS  0xf
 #define MAX_NUMBER_OF_PORTS 0xf
+#define FDT_SIZE 0x4
+#define DEVICE_TABLE_SIZE 0x2
 
 #define PAUSE int z;for(z=0;z < 2000000;z++)
 #define PAUSE10 int y;for(y=0;y < 10000000;y++)
@@ -90,6 +92,19 @@ typedef enum {
 	LONG
 } pause_length;
 
+/* This struct represents a device in the 'upper half' of the device driver.
+ * DII (device independant interface) functions are mapped to upper half
+ * device specific functions.
+ */
+typedef struct {
+    int dvnum;
+    char *dvname;
+    int (*dvopen) ();  // TODO: decide on the parameters for these function and add them in.
+    int (*dvclose) ();
+    int (*dvread) ();
+    int (*dvwrite) ();
+    int (*dvioctl) ();
+} devsw;
 
 struct PCB {
     int pid;
@@ -101,7 +116,7 @@ struct PCB {
     struct Port* ports; // Linked list of ports owned by the process.
 	int ticks; // number of sleep ticks left when sleeping
 	void* msg; // used for IPC
-    
+    devsw fdt[FDT_SIZE];  // Fixed size file descriptor table.
 };
 
 struct Port {
@@ -110,20 +125,6 @@ struct Port {
     struct Port* next;
 	struct PCB* owner;
 	struct PCB* blocked_list; // list of processes blocked waiting for this port
-};
-
-/* This struct represents a device in the 'upper half' of the device driver.
- * DII (device independant interface) functions are mapped to upper half
- * device specific functions.
- */
-struct devsw {
-    int dvnum;
-    char *dvname;
-    int (*dvopen) ();
-    int (*dvclose) ();
-    int (*dvread) ();
-    int (*dvwrite) ();
-    int (*dvioctl) ();
 };
 
 // for demo
@@ -246,6 +247,9 @@ struct PCB global_process_table[MAX_NUMBER_OF_PCBS];
 // Read find_next_free_pcb(int* pid) in create.c for more info on
 // how it works.
 int global_process_pid_table[MAX_NUMBER_OF_PCBS];
+
+// Kernel's device table. Only contains 2 entries for assignment 3.
+devsw device_table[DEVICE_TABLE_SIZE];
 
 struct PCB* ready_queue;
 struct PCB* blocked_queue;
