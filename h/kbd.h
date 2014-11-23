@@ -2,5 +2,9 @@
  * keyboard device.
  */
 
-#include <xeroskernel.h>
 
+int kbd_open(void); 
+int kbd_close(void); 
+int kbd_read(void); 
+int kbd_write(void);
+int kbd_ioctl(void); 

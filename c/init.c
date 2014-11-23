@@ -3,6 +3,7 @@
 #include <i386.h>
 #include <xeroskernel.h>
 #include <xeroslib.h>
+#include <kbd.h>
 
 extern	int	entry( void );  /* start of kernel image, use &start    */
 extern	int	end( void );    /* end of kernel image, use &end        */
@@ -32,6 +33,8 @@ void init_queues(void);
 void init_pcb_table(void);
 void init_port_table(void);
 void init_device_tabel(void);
+void initKeyboard(void);
+void initKeyboardEcho(void);
 
 /* The beginning */
 void initproc( void ) {
@@ -79,10 +82,29 @@ void init_port_table(void) {
 void init_device_tabel(void) {
     devsw device_table[DEVICE_TABLE_SIZE];
     // TODO: add the two variations of the keyboard into this.
+    initKeyboard();
+    initKeyboardEcho();
 }
 
+void initKeyboard(void) {
+   devsw d = device_table[0];
+   d.dvnum = 0;
+   d.dvname = "keyboard";
+   d.dvopen = kbd_open; 
+   d.dvclose = kbd_close;
+   d.dvread = kbd_read;
+   d.dvwrite = kbd_write;
+   d.dvioctl = kbd_ioctl;
+}
 
-
-
-
-
+void initKeyboardEcho(void) {
+   // TODO: make this unique to echo version of keyboard.
+   devsw d = device_table[1];
+   d.dvnum = 1;
+   d.dvname = "keyboardecho";
+   d.dvopen = kbd_open; 
+   d.dvclose = kbd_close;
+   d.dvread = kbd_read;
+   d.dvwrite = kbd_write;
+   d.dvioctl = kbd_ioctl;
+}
