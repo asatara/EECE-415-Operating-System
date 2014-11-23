@@ -40,7 +40,7 @@ typedef	char    Bool;   /* Boolean type                  */
 #define PTR_LOG    0
 #define SIG_LOG    1
 
-
+int temp22;
 /* Functions defined by startup code */
 
 
@@ -102,9 +102,10 @@ struct PCB {
     struct Port* ports; // Linked list of ports owned by the process.
 	int ticks; // number of sleep ticks left when sleeping
 	void* msg; // used for IPC
-	struct PCB* blocked_queue; // If blocked, pcb is in this blocked_queue
+	struct PCB** blocked_queue; // If blocked, pcb is in this blocked_queue
 	int signal_controller;
 	void* signal_table[MAX_NUMBER_OF_SIGS];
+	Bool is_in_signal;
 };
 
 struct Port {

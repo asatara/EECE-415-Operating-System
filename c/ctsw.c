@@ -20,6 +20,7 @@ void context_init(void) {
 system_call contextswitch(struct PCB* p) {
 	curr_running_process = p;
 	p->state = RUNNING;
+	p->next = NULL;
 	p->context->eax = p->rc;
 	ESP = p->context->esp;
 	__asm__ volatile(

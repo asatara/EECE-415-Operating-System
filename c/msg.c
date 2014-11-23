@@ -71,7 +71,7 @@ int ksendtoport(int portNumber, void* msg, struct PCB *sending_proc) {
 			sending_proc->state = BLOCKED;
 			sending_proc->msg = msg;
 			addToQueue(&recv_port->blocked_list, sending_proc);
-			sending_proc->blocked_queue = recv_port->blocked_list;
+			sending_proc->blocked_queue = &recv_port->blocked_list;
 			return -2;
 		}
 
@@ -115,7 +115,7 @@ int krecvfromport(int portNumber, void **msg, struct PCB *recv_proc) {
 			recv_proc->msg = msg;
 			recv_proc->state = BLOCKED;
 			addToQueue(&blocked_queue, recv_proc);
-			recv_proc->blocked_queue = blocked_queue;
+			recv_proc->blocked_queue = &blocked_queue;
 			return -2;
 		}
     }

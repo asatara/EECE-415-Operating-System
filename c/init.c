@@ -34,12 +34,13 @@ void init_port_table(void);
 
 void initproc( void )				/* The beginning */
 {
+	temp22 = 1;
 	kmeminit();
 	context_init();
     init_queues();
 	init_pcb_table();
 	init_port_table();
-	initPIT(100);
+	initPIT(10);
 	create(root_process_entry, 0x1000);
 	create(idle_process_entry, 0x1000);
 	dispatch();

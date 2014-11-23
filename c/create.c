@@ -57,6 +57,7 @@ int create(void (*func)(void), int stack_size) {
 	pcb->next = NULL;
     pcb->ports = NULL;
 	pcb->signal_controller = 0;
+	pcb->is_in_signal = FALSE;
 	int i;
 	for (i = 0; i < MAX_NUMBER_OF_SIGS; i++) {
 		pcb->signal_table[i] = NULL;

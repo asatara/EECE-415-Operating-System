@@ -7,6 +7,7 @@ void handler2(void* frame);
 void (*p)(void) = producer;
 
 void root(void) {
+	sysputs("hi\n");
 	int pid = sysgetpid();
 	sysputs2("Root (Process %d) is alive.\n", pid);
 	syscreate(producer, 4000);
@@ -22,8 +23,6 @@ void root(void) {
 	void* buff;
 	result = sysportsend(5, buff);
 	kprintf("Process 0: syssigwait returned: %d\n", result);
-	for(;;);
-	sysputs("Done\n");
 }
 
 void idle(void) {
@@ -37,17 +36,16 @@ extern void producer(void) {
 	sysputs2("Process %d is alive.\n", pid);
 	sysportcreate(5);
 	sysyield();
-	int result = syskill(0, 0);
+	int result = syskill(0, 2);
 	kprintf("syskill returned: %d\n", result);
-	result = syskill(0, 1);
+	result = syskill(0, 3);
 	kprintf("syskill returned: %d\n", result);
 	sysyield();
-	
 }
 
 void handler(void* frame) {
 	kprintf("Signal For handler1 received\n");
-	syssigwait();
+	sysyield();
 }
 
 void handler2(void* frame) {

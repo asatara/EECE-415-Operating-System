@@ -19,21 +19,21 @@ extern void dispatch(void) {
 	struct PCB* process = find_next_ready_process();
 	
 	for(;;) {
-		if (process->signal_controller > 0) {
+		if (process->signal_controller > 0 && !process->is_in_signal) {
 			kprintf("Signal detected for pid %d\n", process->pid);
 			prepare_sigtramp(process);
 		}
 		request = contextswitch(process);
 		switch(request) {
 			case(SYS_YIELD): {
-				kprintf_log(DISP_LOG, SHORT, "Process %d requested service SYS_YIELD."
+				kprintf_log(DISP_LOG, 0, "Process %d requested service SYS_YIELD."
 					" Adding process to ready queue\n",process->pid);
 				addToQueue(&ready_queue, process);
 				process = find_next_ready_process();
 				break;
 			}
 			case(SYS_CREATE): {
-				kprintf_log(DISP_LOG, SHORT, "Process %d requested service SYS_CREATE.\n", process->pid);
+				kprintf_log(DISP_LOG, 0, "Process %d requested service SYS_CREATE.\n", process->pid);
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				void (*new_process)(void) = va_arg(argv, unsigned long);
@@ -44,7 +44,7 @@ extern void dispatch(void) {
 				break;
 			}
 			case(SYS_STOP): {
-				kprintf_log(DISP_LOG, SHORT, "Process %d requested service SYS_STOP. Terminating process\n", process->pid);
+				kprintf_log(DISP_LOG, 0, "Process %d requested service SYS_STOP. Terminating process\n", process->pid);
                 kkillproc(process);
 				process = find_next_ready_process();
 				break;
@@ -65,7 +65,7 @@ extern void dispatch(void) {
 				break;
 			}
             case(SYS_PORT_CREATE): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_PORT_CREATE.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_PORT_CREATE.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int port = va_arg(argv, int);
@@ -73,7 +73,7 @@ extern void dispatch(void) {
                 break;
             }
             case(SYS_PORT_DELETE): {
-				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_PORT_DELETE.\n", process->pid);
+				kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_PORT_DELETE.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int port = va_arg(argv, int);
@@ -82,7 +82,7 @@ extern void dispatch(void) {
                 break;
             }
             case(SYS_SEND): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SEND.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_SEND.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int port = va_arg(argv, int);
@@ -94,7 +94,7 @@ extern void dispatch(void) {
                 break;
             }
             case(SYS_PORT_RECV): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_PORT_RECV.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_PORT_RECV.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int port = va_arg(argv, int);
@@ -109,7 +109,7 @@ extern void dispatch(void) {
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				unsigned int milliseconds = va_arg(argv, unsigned int);
-				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SLEEP for %d milliseconds.\n", process->pid, milliseconds);
+				kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_SLEEP for %d milliseconds.\n", process->pid, milliseconds);
 				if (milliseconds > 0 ) {
 					process->ticks = milliseconds / 10;
 					process->state = SLEEP;
@@ -119,12 +119,12 @@ extern void dispatch(void) {
 				break;
 			}
             case(SYS_GET_PID): {
-				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_GET_PID.\n", process->pid);
+				kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_GET_PID.\n", process->pid);
                 process->rc = process->pid;
                 break;
 			}
             case(SYS_KILL): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_KILL.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_KILL.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int target_pid = va_arg(argv, int);
@@ -142,7 +142,7 @@ extern void dispatch(void) {
                 break;
             }
 			case(SYS_SIG_HANDLE): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SIG_HANDLE.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_SIG_HANDLE.\n", process->pid);
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int signal = va_arg(argv, int);
@@ -166,16 +166,17 @@ extern void dispatch(void) {
 				break;
 			}
 			case(SYS_SIG_RETURN): {
-				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SIG_RETURN.\n", process->pid);
+				kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_SIG_RETURN.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				void* old_sp = va_arg(argv, void*);
 				process->context->esp = (int)old_sp;
 				process->rc = *((int*)(old_sp - 1));
+				process->is_in_signal = FALSE;
 				break;
 			}
 			case(SYS_SIG_WAIT): {
-				kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYS_SIG_WAIT.\n", process->pid);
+				kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_SIG_WAIT.\n", process->pid);
 				if (process->signal_controller == 0) {
 					process->state = SIG_WAIT;
 					process = find_next_ready_process();
@@ -194,13 +195,12 @@ extern void dispatch(void) {
 }
 
 struct PCB* find_next_ready_process(void) {
-	if (ready_queue == NULL)
+	if (ready_queue == 0)
 		return idle_process;
-	
 	struct PCB* head = ready_queue;
 	ready_queue = head->next;
 	head->next = NULL;
-	kprintf_log(DISP_LOG, SHORT,"Next ready process is process %d."
+	kprintf_log(0, 0,"Next ready process is process %d."
 		" Switching to process %d\n", head->pid, head->pid);
 	return head;
 }
@@ -233,7 +233,7 @@ Bool unblockProcess(struct PCB** queue, int portNumber) {
 	if (result == NULL)
 		return FALSE;
 	else {
-		kprintf_log(PORT_LOG, SHORT, "Unblocking pid %d\n", result->pid);
+		kprintf_log(PORT_LOG, 0, "Unblocking pid %d\n", result->pid);
 		return TRUE;
 	}
 }
@@ -242,6 +242,7 @@ Bool unblockProcess(struct PCB** queue, int portNumber) {
 void kkillproc(struct PCB *proc) {
     proc->state = STOPPED;
     proc->pid = -1;
+	proc->next = NULL;
     kdestroyallports(proc);
     kfree((void *)proc->top_of_stack);
 }
@@ -276,6 +277,7 @@ void queue_dump() {
 void addToQueue(struct PCB** queue, struct PCB* process) {
 	if (*queue == NULL) {
 		*queue = process;
+		(*queue)->next = NULL;
 		return;
 	}
 

@@ -22,7 +22,8 @@ int signal(int pid, int signalNum) {
 
 	
 	if (pcb->state == BLOCKED) {
-		struct PCB* result = removeFromQueue(&pcb->blocked_queue, pcb);
+		kprintf("printing port 5 blocked queue\n", pcb->pid);
+		struct PCB* result = removeFromQueue(pcb->blocked_queue, pcb);
 		if (result == NULL) {
 			kprintf("ERROR: pcb status is blocked by cannot find pcb in blocked queue\n");			
 		}
@@ -30,12 +31,16 @@ int signal(int pid, int signalNum) {
 		pcb->rc = -452;
 		pcb->state = READY;
 		addToQueue(&ready_queue, pcb);
+		kprintf("Adding pid %d to ready queue\n", pcb->pid);
 	}
 
+	if (pcb->signal_table[signalNum] == NULL)
+		return 0;
 
 	
 	if (pcb->state == SIG_WAIT) {
 		pcb->state = READY;
+		kprintf("Adding pid %d to ready queue\n", pcb->pid);
 		addToQueue(&ready_queue, pcb);
 		pcb->rc = signalNum;
 	}
@@ -97,6 +102,7 @@ void prepare_sigtramp(struct PCB* pcb) {
 	sigtramp_context->eax = 0;
 	pcb->context->esp = (int)sp;
 	
+	pcb->is_in_signal = TRUE;
 
 }
 
