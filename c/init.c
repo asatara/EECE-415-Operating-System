@@ -3,6 +3,7 @@
 #include <i386.h>
 #include <xeroskernel.h>
 #include <xeroslib.h>
+#include <kbd.h>
 
 extern	int	entry( void );  /* start of kernel image, use &start    */
 extern	int	end( void );    /* end of kernel image, use &end        */
@@ -31,10 +32,12 @@ void (*idle_process_entry)(void) = idle;
 void init_queues(void);
 void init_pcb_table(void);
 void init_port_table(void);
+void init_device_tabel(void);
+void initKeyboard(void);
+void initKeyboardEcho(void);
 
-void initproc( void )				/* The beginning */
-{
-	temp22 = 1;
+/* The beginning */
+void initproc( void ) {
 	kmeminit();
 	context_init();
     init_queues();
@@ -43,6 +46,7 @@ void initproc( void )				/* The beginning */
 	initPIT(10);
 	create(root_process_entry, 0x1000);
 	create(idle_process_entry, 0x1000);
+    init_device_tabel();
 	dispatch();
 }
 
@@ -57,6 +61,12 @@ void init_pcb_table(void) {
 		global_process_table[i].pid = -1;
 		global_process_table[i].state = STOPPED;
 		global_process_pid_table[i] = -1;
+
+        // Initialize all entries in fdt to zero.
+        int k;
+        for(k = 0; k < FDT_SIZE; k++) {
+            global_process_table[i].fdt[k] = 0;
+        }
 	}
 }
 
@@ -69,7 +79,32 @@ void init_port_table(void) {
 }
 
 
+void init_device_tabel(void) {
+    devsw device_table[DEVICE_TABLE_SIZE];
+    // TODO: add the two variations of the keyboard into this.
+    initKeyboard();
+    initKeyboardEcho();
+}
 
+void initKeyboard(void) {
+   devsw d = device_table[0];
+   d.dvnum = 0;
+   d.dvname = "keyboard";
+   d.dvopen = kbd_open; 
+   d.dvclose = kbd_close;
+   d.dvread = kbd_read;
+   d.dvwrite = kbd_write;
+   d.dvioctl = kbd_ioctl;
+}
 
-
-
+void initKeyboardEcho(void) {
+   // TODO: make this unique to echo version of keyboard.
+   devsw d = device_table[1];
+   d.dvnum = 1;
+   d.dvname = "keyboardecho";
+   d.dvopen = kbd_open; 
+   d.dvclose = kbd_close;
+   d.dvread = kbd_read;
+   d.dvwrite = kbd_write;
+   d.dvioctl = kbd_ioctl;
+}

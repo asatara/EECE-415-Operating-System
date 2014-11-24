@@ -22,7 +22,12 @@ typedef	char    Bool;   /* Boolean type                  */
 
 #define MAX_NUMBER_OF_PCBS  0xf
 #define MAX_NUMBER_OF_PORTS 0xf
+<<<<<<< HEAD
 #define MAX_NUMBER_OF_SIGS 0x20
+=======
+#define FDT_SIZE 0x4
+#define DEVICE_TABLE_SIZE 0x2
+>>>>>>> origin/device-driver
 
 #define PAUSE int z;for(z=0;z < 2000000;z++)
 #define PAUSE10 int y;for(y=0;y < 10000000;y++)
@@ -81,7 +86,12 @@ typedef enum {
     SYS_KILL,
 	SYS_SIG_HANDLE,
 	SYS_SIG_RETURN,
-	SYS_SIG_WAIT
+	SYS_SIG_WAIT,
+    SYSOPEN,
+    SYSCLOSE,
+    SYSWRITE,
+    SYSREAD,
+    SYSIOCTL
 } system_call;
 
 // used for testing
@@ -91,6 +101,19 @@ typedef enum {
 	LONG
 } pause_length;
 
+/* This struct represents a device in the 'upper half' of the device driver.
+ * DII (device independant interface) functions are mapped to upper half
+ * device specific functions.
+ */
+typedef struct {
+    int dvnum;
+    char *dvname;
+    int (*dvopen) (void);  // TODO: decide on the parameters for these function and add them in.
+    int (*dvclose) (void);
+    int (*dvread) (void);
+    int (*dvwrite) (void);
+    int (*dvioctl) (void);
+} devsw;
 
 struct PCB {
     int pid;
@@ -106,6 +129,7 @@ struct PCB {
 	int signal_controller;
 	void* signal_table[MAX_NUMBER_OF_SIGS];
 	Bool is_in_signal;
+    devsw* fdt[FDT_SIZE];  // Fixed size file descriptor table.
 };
 
 struct Port {
@@ -204,6 +228,11 @@ extern int   syssighandler(int signal, void (*newhandler)(void*), void (**oldhan
 extern void  syssigreturn(void* old_sp);
 extern int   syskill(int pid, int sigNumber);
 extern int   syssigwait(void);
+extern int sysopen(int device_no);
+extern int sysclose(int fd);
+extern int syswrite(int fd, void *buff, int bufflen);
+extern int sysread(int fd, void *buff, int bufflen);
+extern int sysioctl(int fg, unsigned long command, ...);
 
 
 // Defined in msg.c
@@ -224,6 +253,13 @@ extern void sigtramp(void (*handler)(void *), void *context, void *old_sp);
 extern int signal(int pid, int signalNum);
 extern void prepare_sigtramp(struct PCB* pcb);
 
+// Defined in di_calls.c
+extern int di_open(struct PCB* pcb, int device_no);
+extern int di_close(struct PCB *pcb, int fd);
+extern void di_write(void);
+extern void di_read(void);
+extern void di_ioctl(void);
+
 
 // The global process table has 32 spaces so there can be 32 process in the system at once.
 // Static so that it is viewable be the whole compilation unit.
@@ -233,6 +269,9 @@ struct PCB global_process_table[MAX_NUMBER_OF_PCBS];
 // Read find_next_free_pcb(int* pid) in create.c for more info on
 // how it works.
 int global_process_pid_table[MAX_NUMBER_OF_PCBS];
+
+// Kernel's device table. Only contains 2 entries for assignment 3.
+devsw device_table[DEVICE_TABLE_SIZE];
 
 struct PCB* ready_queue;
 struct PCB* blocked_queue;

@@ -54,7 +54,7 @@ system_call contextswitch(struct PCB* p) {
 	p->context = (struct context_frame*)ESP;
 	p->context->esp = ESP;
 	#ifdef PROCESS_FLOW_LOG
-		kprintf("Switched back to kernel from process %d. Retuning to dispatcher\n", p->pid);
+		kprintf("Switched back to kernel from process %d. Returning to dispatcher\n", p->pid);
 	#endif
 
 	if (interrupt) {
