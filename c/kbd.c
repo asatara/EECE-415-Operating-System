@@ -172,8 +172,8 @@ int kbd_ioctl(void) {
     return 0;
 }
 
-set_evec(0x60, (unsigned long)_KeyboardEntryPoint);
-
+//set_evec(0x60, (unsigned long)_KeyboardEntryPoint);
+/*
 __asm__ volatile(
 "_KeyboardEntryPoint:" 
     "cli;" // turn off interrupts
@@ -183,4 +183,6 @@ __asm__ volatile(
 : 
 :"%eax", "%ecx"
 ); 
+
+*/
 

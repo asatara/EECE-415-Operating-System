@@ -22,12 +22,9 @@ typedef	char    Bool;   /* Boolean type                  */
 
 #define MAX_NUMBER_OF_PCBS  0xf
 #define MAX_NUMBER_OF_PORTS 0xf
-<<<<<<< HEAD
 #define MAX_NUMBER_OF_SIGS 0x20
-=======
 #define FDT_SIZE 0x4
 #define DEVICE_TABLE_SIZE 0x2
->>>>>>> origin/device-driver
 
 #define PAUSE int z;for(z=0;z < 2000000;z++)
 #define PAUSE10 int y;for(y=0;y < 10000000;y++)
