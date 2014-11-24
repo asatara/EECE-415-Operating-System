@@ -172,17 +172,27 @@ int kbd_ioctl(void) {
     return 0;
 }
 
-//set_evec(0x60, (unsigned long)_KeyboardEntryPoint);
+void init_kbd(void) {
+    /*
+    set_evec(1, (unsigned long)_KeyboardEntryPoint);
+    __asm__ volatile(
+    "_KeyboardEntryPoint:" 
+        "mov 60h, %%edx;"
+        "in;"
+    :
+    : 
+    :"%eax", "%ecx"
+    ); 
+    */
+}
+
+
+
 /*
-__asm__ volatile(
-"_KeyboardEntryPoint:" 
-    "cli;" // turn off interrupts
-    "pusha;" // save registers
-    "movl $1, %%ecx;" // indicate interrupt
-:
-: 
-:"%eax", "%ecx"
-); 
-
+    "_KeyboardEntryPoint:" 
+		"cli;" // turn off interrupts
+		"pusha;" // save registers
+        "movl $1, %%ecx;"  // indicate interrupt
+        "mov $18, %%eax;"  // Syscall 18
+        "jmp _CommonEntryPoint;"
 */
-

@@ -2,7 +2,7 @@
  * keyboard device.
  */
 
-
+void init_kbd(void);
 int kbd_open(void); 
 int kbd_close(void); 
 int kbd_read(void); 

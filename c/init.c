@@ -32,7 +32,7 @@ void (*idle_process_entry)(void) = idle;
 void init_queues(void);
 void init_pcb_table(void);
 void init_port_table(void);
-void init_device_tabel(void);
+void init_device_table(void);
 void initKeyboard(void);
 void initKeyboardEcho(void);
 
@@ -46,7 +46,7 @@ void initproc( void ) {
 	initPIT(10);
 	create(root_process_entry, 0x1000);
 	create(idle_process_entry, 0x1000);
-    init_device_tabel();
+    init_device_table();
 	dispatch();
 }
 
@@ -79,9 +79,8 @@ void init_port_table(void) {
 }
 
 
-void init_device_tabel(void) {
+void init_device_table(void) {
     devsw device_table[DEVICE_TABLE_SIZE];
-    // TODO: add the two variations of the keyboard into this.
     initKeyboard();
     initKeyboardEcho();
 }

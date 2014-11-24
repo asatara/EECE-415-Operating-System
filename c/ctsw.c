@@ -6,6 +6,7 @@
 extern void _ISREntryPoint(void);
 extern void _CommonEntryPoint(void);
 extern void _TimerEntryPoint(void);
+extern void _KeyboardEntryPoint(void);
 
 static void* k_stack;
 static unsigned int ESP;
@@ -15,6 +16,7 @@ static int interrupt;
 void context_init(void) {
 	set_evec(80, (unsigned long)_ISREntryPoint);
 	set_evec(32, (unsigned long)_TimerEntryPoint);
+    set_evec(1, (unsigned long)_KeyboardEntryPoint);
 }
 
 system_call contextswitch(struct PCB* p) {
@@ -30,6 +32,12 @@ system_call contextswitch(struct PCB* p) {
 		"movl ESP, %%esp;"
 		"popa;"
 		"iret;"
+    "_KeyboardEntryPoint:" 
+		"cli;" // turn off interrupts
+		"pusha;" // save registers
+        "movl $1, %%ecx;"  // indicate interrupt
+        "movl $1, %%eax;"  // keyboard interrupt  
+        "jmp _CommonEntryPoint;"
 	"_TimerEntryPoint:" 
 		"cli;" // turn off interrupts
 		"pusha;" // save registers
@@ -61,6 +69,10 @@ system_call contextswitch(struct PCB* p) {
 		// preserve the value of eax so we can restore it later
 		p->rc = p->context->eax;
 	}
+    
+    if(rc == 1 && interrupt == 1) {
+       kprintf("Keyboard interrupt!"); 
+    }
 
 	if (FALSE)
 		k_stack = 0;
