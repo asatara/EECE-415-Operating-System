@@ -80,7 +80,7 @@ void devswToString(devsw *d) {
    kprintf("devsw\n"); 
    kprintf("\tdvnum = %d\tdvname = %s\tdvopen = %d\tdvclose = %d\n",
         d->dvnum, d->dvname, d->dvopen, d->dvclose);
-   kprintf("\tdvwrite - %d\tdvread = %d\tdvioctl = %d\n",
+   kprintf("\tdvwrite = %d\tdvread = %d\tdvioctl = %d\n",
         d->dvwrite, d->dvread, d->dvioctl);
 }
 

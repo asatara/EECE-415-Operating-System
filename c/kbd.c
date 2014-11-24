@@ -147,14 +147,24 @@ main() {
   kprintf("45 = %c\n", kbtoa(45));
 }
 
-
+// keyboard microcontroller: port 0x60
+// onboard microcontroller: port 0x64
 int kbd_open(void) {
-    kprintf("Executing kbd_open. Keyboard status is: %d\n", inb(0x64));
-    enable_irq(1, 0);
+    kprintf("Executing kbd_open.\n");
+    kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
+    kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
+    enable_irq(33, 0);
+    outb(0x60, 0xF4);  // Enable keyboard
+    outb(0x64, 0xAE);  // Enable keyboard
+    outb(0x64, 0x01);  // Enable keyboard
+    kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
+    kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
     return 0;
 }
 
 int kbd_close(void) {
+    // TODO: figure out how to disable the keyboard interrupt.
+    kprintf("Executing kbd_close.\n");
     return 0;
 }
 

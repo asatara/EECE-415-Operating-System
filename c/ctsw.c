@@ -66,6 +66,7 @@ system_call contextswitch(struct PCB* p) {
 	#endif
 
 	if (interrupt) {
+        kprintf("Interrupt occured: %d!\n", interrupt);
 		// preserve the value of eax so we can restore it later
 		p->rc = p->context->eax;
 	}
