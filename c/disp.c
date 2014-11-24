@@ -189,7 +189,6 @@ extern void dispatch(void) {
 				va_list argv = *argp;
 				int device_no = va_arg(argv, int);
                 process->rc = di_open(process, device_no);
-                request = contextswitch(process);
                 break;
             }
             case(SYSCLOSE): {
@@ -198,7 +197,6 @@ extern void dispatch(void) {
 				va_list argv = *argp;
 				int fd = va_arg(argv, int);
                 process->rc = di_close(process, fd);
-                request = contextswitch(process);
                 break;
             }
             case(SYSWRITE): {

@@ -153,7 +153,7 @@ int kbd_open(void) {
     kprintf("Executing kbd_open.\n");
     kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
     kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
-    enable_irq(33, 0);
+    enable_irq(1, 0);
     outb(0x60, 0xF4);  // Enable keyboard
     outb(0x64, 0xAE);  // Enable keyboard
     outb(0x64, 0x01);  // Enable keyboard

@@ -16,7 +16,7 @@ static int interrupt;
 void context_init(void) {
 	set_evec(80, (unsigned long)_ISREntryPoint);
 	set_evec(32, (unsigned long)_TimerEntryPoint);
-    set_evec(33, (unsigned long)_KeyboardEntryPoint);
+	set_evec(33, (unsigned long)_KeyboardEntryPoint);
 }
 
 system_call contextswitch(struct PCB* p) {
@@ -66,7 +66,8 @@ system_call contextswitch(struct PCB* p) {
 	#endif
 
 	if (interrupt) {
-        kprintf("Interrupt occured: %d!\n", interrupt);
+		if (rc != 9)
+	        kprintf("Interrupt occured: %d!\n", rc);
 		// preserve the value of eax so we can restore it later
 		p->rc = p->context->eax;
 	}
