@@ -149,9 +149,8 @@ main() {
 
 
 int kbd_open(void) {
-    kprintf("Executing kbd_open.\n");
+    kprintf("Executing kbd_open. Keyboard status is: %d\n", inb(0x64));
     enable_irq(1, 0);
-
     return 0;
 }
 

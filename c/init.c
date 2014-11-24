@@ -36,6 +36,7 @@ void init_device_table(void);
 void initKeyboard(void);
 void initKeyboardEcho(void);
 
+
 /* The beginning */
 void initproc( void ) {
 	kmeminit();
@@ -86,24 +87,26 @@ void init_device_table(void) {
 }
 
 void initKeyboard(void) {
-   devsw d = device_table[0];
-   d.dvnum = 0;
-   d.dvname = "keyboard";
-   d.dvopen = kbd_open; 
-   d.dvclose = kbd_close;
-   d.dvread = kbd_read;
-   d.dvwrite = kbd_write;
-   d.dvioctl = kbd_ioctl;
+   devsw *d = &device_table[0];
+   d->dvnum = 0;
+   d->dvname = "keyboard";
+   d->dvopen = kbd_open; 
+   d->dvclose = kbd_close;
+   d->dvread = kbd_read;
+   d->dvwrite = kbd_write;
+   d->dvioctl = kbd_ioctl; 
+   devswToString(&device_table[0]);
 }
 
 void initKeyboardEcho(void) {
    // TODO: make this unique to echo version of keyboard.
-   devsw d = device_table[1];
-   d.dvnum = 1;
-   d.dvname = "keyboardecho";
-   d.dvopen = kbd_open; 
-   d.dvclose = kbd_close;
-   d.dvread = kbd_read;
-   d.dvwrite = kbd_write;
-   d.dvioctl = kbd_ioctl;
+   devsw *d = &device_table[1];
+   d->dvnum = 1;
+   d->dvname = "keyboardecho";
+   d->dvopen = &kbd_open; 
+   d->dvclose = &kbd_close;
+   d->dvread = &kbd_read;
+   d->dvwrite = &kbd_write;
+   d->dvioctl = &kbd_ioctl;
 }
+

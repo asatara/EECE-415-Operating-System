@@ -11,10 +11,12 @@ void printFDT(struct PCB *pcb);
  * failed, return -1.
  */
 int di_open(struct PCB* pcb, int device_no) {
-    devsw device = device_table[device_no];
     int i;
     for(i = 0; i < FDT_SIZE; i++) {
        if(pcb->fdt[i] == 0) {
+           devsw device = device_table[device_no];
+           kprintf("Opening device: %s\n", device.dvname);
+           device.dvopen();
            pcb->fdt[i] = &device;
            printFDT(pcb);
            return i;
@@ -64,6 +66,21 @@ void printFDT(struct PCB *pcb) {
     kprintf("Printing file descriptor table for proc %d\n", pcb->pid);
     int k;
     for(k = 0; k < FDT_SIZE; k++) {
-        kprintf("\tfd %d = %d\n", k, pcb->fdt[k]);
+        devsw *d = pcb->fdt[k];
+        kprintf("\tfd %d = %d", k, d);
+        if(d > 0) {
+            kprintf("(%s)\n",d->dvname);
+        } else {
+            kprintf("\n");
+        }
     }
 }
+
+void devswToString(devsw *d) {
+   kprintf("devsw\n"); 
+   kprintf("\tdvnum = %d\tdvname = %s\tdvopen = %d\tdvclose = %d\n",
+        d->dvnum, d->dvname, d->dvopen, d->dvclose);
+   kprintf("\tdvwrite - %d\tdvread = %d\tdvioctl = %d\n",
+        d->dvwrite, d->dvread, d->dvioctl);
+}
+

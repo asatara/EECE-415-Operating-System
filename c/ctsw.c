@@ -16,7 +16,7 @@ static int interrupt;
 void context_init(void) {
 	set_evec(80, (unsigned long)_ISREntryPoint);
 	set_evec(32, (unsigned long)_TimerEntryPoint);
-    set_evec(1, (unsigned long)_KeyboardEntryPoint);
+    set_evec(33, (unsigned long)_KeyboardEntryPoint);
 }
 
 system_call contextswitch(struct PCB* p) {
@@ -71,7 +71,7 @@ system_call contextswitch(struct PCB* p) {
 	}
     
     if(rc == 1 && interrupt == 1) {
-       kprintf("Keyboard interrupt!"); 
+       kprintf("\n\nKeyboard interrupt!\n\n"); 
     }
 
 	if (FALSE)

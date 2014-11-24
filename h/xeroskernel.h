@@ -256,6 +256,7 @@ extern int di_close(struct PCB *pcb, int fd);
 extern void di_write(void);
 extern void di_read(void);
 extern void di_ioctl(void);
+void devswToString(devsw *d); 
 
 
 // The global process table has 32 spaces so there can be 32 process in the system at once.
