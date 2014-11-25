@@ -243,8 +243,6 @@ int kbd_uread(struct PCB* pcb, void* buff, int len, int e) {
 	requestInd = 0;
 	requestProcess = pcb;
     ECHO = e;
-	kprintf("buffer addr is %d\n", requestBuffer);
-
 	while (buffer.nb != 0) {
 		requestBuffer[requestInd] = Buffer_Read(&buffer);
 		requestInd++;

@@ -19,7 +19,6 @@ extern void dispatch(void) {
 	
 	for(;;) {
 		if (process->signal_controller > 0 && !process->is_in_signal) {
-			kprintf("Signal detected for pid %d\n", process->pid);
 			prepare_sigtramp(process);
 		}
 		request = contextswitch(process);
@@ -32,14 +31,13 @@ extern void dispatch(void) {
 				break;
 			}
 			case(SYS_CREATE): {
-				kprintf_log(DISP_LOG, 0, "Process %d requested service SYS_CREATE.\n", process->pid);
+				kprintf_log(DEMO_LOG, 0, "Process %d requested service SYS_CREATE.\n", process->pid);
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				void (*new_process)(void) = va_arg(argv, unsigned long);
 				int size = va_arg(argv, int);
 				int pid = create(new_process, size);
 				process->rc = pid;
-				kprintf_log(DEMO_LOG, 0, "Process %d requested service SYS_CREATE. Process %d has been created.\n", process->pid, pid);
 				break;
 			}
 			case(SYS_STOP): {
@@ -108,7 +106,7 @@ extern void dispatch(void) {
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				unsigned int milliseconds = va_arg(argv, unsigned int);
-				kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_SLEEP for %d milliseconds.\n", process->pid, milliseconds);
+				kprintf_log(DEMO_LOG, 0,"Process %d requested system call SYS_SLEEP for %d milliseconds.\n", process->pid, milliseconds);
 				if (milliseconds > 0 ) {
 					process->ticks = milliseconds / 10;
 					process->state = SLEEP;
@@ -123,12 +121,12 @@ extern void dispatch(void) {
                 break;
 			}
             case(SYS_KILL): {
-                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_KILL.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int target_pid = va_arg(argv, int);
 				int signalNum = va_arg(argv, int);
 
+                kprintf_log(DEMO_LOG, 0,"Process %d requested system call SYS_KILL on pid %d with signal %d\n", process->pid, target_pid, signalNum);
                 int ret;;
 				ret = signal(target_pid, signalNum);
 
@@ -141,7 +139,7 @@ extern void dispatch(void) {
                 break;
             }
 			case(SYS_SIG_HANDLE): {
-                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYS_SIG_HANDLE.\n", process->pid);
+                kprintf_log(DEMO_LOG, 0,"Process %d requested system call SYS_SIG_HANDLE.\n", process->pid);
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int signal = va_arg(argv, int);
@@ -183,7 +181,7 @@ extern void dispatch(void) {
 				break;
 			}
             case(SYSOPEN): {
-                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYSOPEN.\n", process->pid);
+                kprintf_log(DEMO_LOG, 0,"Process %d requested system call SYSOPEN.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int device_no = va_arg(argv, int);
@@ -191,7 +189,7 @@ extern void dispatch(void) {
                 break;
             }
             case(SYSCLOSE): {
-                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYSCLOSE.\n", process->pid);
+                kprintf_log(DEMO_LOG, 0,"Process %d requested system call SYSCLOSE.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int fd = va_arg(argv, int);
@@ -204,7 +202,7 @@ extern void dispatch(void) {
                 break;
             }
             case(SYSREAD): {
-                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYSREAD.\n", process->pid);
+                kprintf_log(DEMO_LOG, 0,"Process %d requested system call SYSREAD.\n", process->pid);
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int fd = va_arg(argv, int);

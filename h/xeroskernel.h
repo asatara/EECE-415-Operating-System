@@ -32,7 +32,7 @@ typedef	char    Bool;   /* Boolean type                  */
 
 // Logging levels
 #define MEM_LOG    0
-#define DISP_LOG   1
+#define DISP_LOG   0
 #define FLOW_LOG   0
 #define QUEUE_lOG  0
 #define TABEL_LOG  0
@@ -112,7 +112,7 @@ struct PCB {
 	int ticks; // number of sleep ticks left when sleeping
 	void* msg; // used for IPC
 	struct PCB** blocked_queue; // If blocked, pcb is in this blocked_queue
-	int signal_controller;
+	unsigned int signal_controller;
 	void* signal_table[MAX_NUMBER_OF_SIGS];
 	Bool is_in_signal;
     struct Devsw* fdt[FDT_SIZE];  // Fixed size file descriptor table.
