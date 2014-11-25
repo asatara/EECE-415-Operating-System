@@ -7,3 +7,7 @@ respect to how new lines and carriage returns are treated. Line widths
 are to be limited to 80 characters.
 
 
+Test syssighanlder()
+
+output
+

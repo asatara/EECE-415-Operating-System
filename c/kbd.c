@@ -152,7 +152,7 @@ unsigned int kbtoa( unsigned char code )
 }
 
 
-void main() {
+void main(void) {
   kbtoa(LSHIFT);
   kprintf("45 = %c\n", kbtoa(45));
   kbtoa(LSHIFT | KEY_UP);
@@ -163,6 +163,7 @@ void main() {
 // keyboard microcontroller: port 0x60
 // onboard microcontroller: port 0x64
 int kbd_open(struct PCB* pcb) {
+    //kprintf("Executing kbd_open.\n");
 	requestProcess = pcb;
     enable_irq(1, 0);
 	buffer.head = 0;
@@ -210,7 +211,7 @@ unsigned int kbd_read(void) {
 				addToQueue(&ready_queue, requestProcess);
 				requestProcess->rc = requestInd;
 				request = NONE;
-			} else if(10 == ascii) {
+			} else if(ascii == _EOF) {
 				removeFromQueue(&blocked_queue, requestProcess);
 				addToQueue(&ready_queue, requestProcess);
 				requestProcess->rc = requestInd;
@@ -222,6 +223,7 @@ unsigned int kbd_read(void) {
 			if (!(code & KEY_UP) && code != 0x2a && code != 0x36 && code !=0x38 && code != 0x1d
 					&& code != 0x3a) {
 				_EOF = ascii;
+                kprintf("_EOF = %c",_EOF);
 				removeFromQueue(&blocked_queue, requestProcess);
 				addToQueue(&ready_queue, requestProcess);
 				requestProcess->rc = 0;
@@ -242,7 +244,6 @@ int kbd_uread(struct PCB* pcb, void* buff, int len, int e) {
 	requestInd = 0;
 	requestProcess = pcb;
     ECHO = e;
-	
 	while (buffer.nb != 0) {
 		requestBuffer[requestInd] = Buffer_Read(&buffer);
 		requestInd++;
@@ -261,7 +262,7 @@ int kbd_write(void) {
 }
 
 
-int kbd_ioctl(int command, va_list argv) {
+int kbd_ioctl(int command) {
 	if (command != 53)
 		return -1;
 	
