@@ -226,7 +226,7 @@ extern void dispatch(void) {
             }
             case(KBD_INT): {
                 kbd_read();
-				end_of_intr();
+				end_of_intr();  // Re-enable interrupts.
                 break;
             }
 			default: {
