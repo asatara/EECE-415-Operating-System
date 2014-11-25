@@ -12,13 +12,15 @@ void (*_p2)(void) = p2;
 void (*_p3)(void) = p3;
 
 void root(void) {
-    int fd = sysopen(0);
+	sysputs("Greetings\n");
+	char buff[10];
+    int fd = sysopen(1);
 	int result = sysread(fd, buff, 10);
 
 	int fd2 = sysopen(1);
 	int fd3 = sysopen(0);
 	sysclose(fd);
-	fd = sysopen(1);
+	fd = sysopen(0);
 
 	void (*oldhandler)(void*);
 	void (*newhandler)(void*) = handler;
