@@ -211,6 +211,11 @@ extern void dispatch(void) {
                 kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSIOCTL.\n", process->pid);
                 break;
             }
+            case(KBD_INT): {
+                kbd_read();
+				end_of_intr();
+                break;
+            }
 			default: {
 				kprintf("Incorrect SYS_CALL %d. Returning to process.\n", request);
 				PAUSE;

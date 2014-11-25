@@ -151,12 +151,7 @@ main() {
 // onboard microcontroller: port 0x64
 int kbd_open(void) {
     kprintf("Executing kbd_open.\n");
-    kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
-    kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
     enable_irq(1, 0);
-    outb(0x60, 0xF4);  // Enable keyboard
-    outb(0x64, 0xAE);  // Enable keyboard
-    outb(0x64, 0x01);  // Enable keyboard
     kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
     kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
     return 0;
@@ -168,8 +163,11 @@ int kbd_close(void) {
     return 0;
 }
 
-int kbd_read(void) {
-    return 0;
+unsigned int kbd_read(void) {  
+    unsigned char code = inb(0x60);
+    unsigned int ascii = kbtoa(code);
+    kprintf("%c ",ascii);
+    return ascii;
 }
 
 int kbd_write(void) {

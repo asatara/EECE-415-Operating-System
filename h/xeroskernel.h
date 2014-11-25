@@ -88,7 +88,8 @@ typedef enum {
     SYSCLOSE,
     SYSWRITE,
     SYSREAD,
-    SYSIOCTL
+    SYSIOCTL,
+    KBD_INT
 } system_call;
 
 // used for testing
