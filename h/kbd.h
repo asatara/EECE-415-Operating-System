@@ -10,7 +10,7 @@ void init_kbd(void);
 int kbd_open(struct PCB* pcb);
 int kbd_close(void); 
 unsigned int kbd_read(void); 
-int kbd_uread(struct PCB* pcb, void* buff, int len);
+int kbd_uread(struct PCB* pcb, void* buff, int len, int e);
 int kbd_write(void);
 int kbd_ioctl(int commnad, va_list argv); 
 

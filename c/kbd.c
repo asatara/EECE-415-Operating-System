@@ -35,6 +35,7 @@ static int requestLen;
 static int requestInd;
 static struct PCB* requestProcess;
 static unsigned int _EOF = 10;
+static int ECHO;
 
 /*  Normal table to translate scan code  */
 unsigned char   kbcode[] = { 0,
@@ -226,18 +227,20 @@ unsigned int kbd_read(void) {
 			}
 		}
 	}
-
-	kprintf("%c", ascii);
+    if(ECHO) {
+	    kprintf("%c", ascii);
+    }
 	return ascii;
 }
 
 
-int kbd_uread(struct PCB* pcb, void* buff, int len) {
+int kbd_uread(struct PCB* pcb, void* buff, int len, int e) {
 	request = READ;
 	requestBuffer = (char*)buff;
 	requestLen = len;
 	requestInd = 0;
 	requestProcess = pcb;
+    ECHO = e;
 
 	while (buffer.nb != 0) {
 		requestBuffer[requestInd] = Buffer_Read(&buffer);
@@ -252,7 +255,6 @@ int kbd_uread(struct PCB* pcb, void* buff, int len) {
 }
 
 
-
 int kbd_write(void) {
     return -1;
 }
@@ -264,11 +266,6 @@ int kbd_ioctl(int command, va_list argv) {
 	
 	request = IOCTL;
     return 0;
-}
-
-void init_kbd(void) {
-
-
 }
 
 char Buffer_Read(Buffer* buff){
@@ -290,5 +287,4 @@ void Buffer_Write(Buffer* buff, char data) {
 	buff->nb++;
 	buff->head++;
 	buff->head = buff->head % (BUFF_SIZE);
-
 }

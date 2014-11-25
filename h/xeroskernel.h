@@ -127,7 +127,7 @@ typedef struct Devsw {
     char *dvname;
     int (*dvopen) (struct PCB* pcb);  // TODO: decide on the parameters for these function and add them in.
     int (*dvclose) (void);
-    int (*dvread) (struct PCB* pcb, void* buff, int len);
+    int (*dvread) (struct PCB* pcb, void* buff, int len, int e);
     int (*dvwrite) (void);
     int (*dvioctl) (int command, va_list argv);
 } devsw;
