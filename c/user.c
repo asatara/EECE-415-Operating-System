@@ -8,14 +8,15 @@ void handler2(void* frame);
 void (*p)(void) = producer;
 
 void root(void) {
-    int fd = sysopen(1);
-    sysputs2("Root got fd %d\n", fd);
+	sysputs("Greetings\n");
 	char buff[10];
-	kprintf("Buffer addr is %d\n", &buff[2]);
-	sysread(fd, buff, 10);
-	sysputs2("Buffer received: %s\n", buff);
-    sysclose(fd);
-	sysputs("Done\n");
+    int fd = sysopen(0);
+	int result = sysread(fd, buff, 10);
+
+	int fd2 = sysopen(1);
+	int fd3 = sysopen(0);
+
+	sysclose(fd);
 }
 
 void idle(void) {

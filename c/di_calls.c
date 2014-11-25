@@ -13,17 +13,23 @@ void printFDT(struct PCB *pcb);
  */
 int di_open(struct PCB* pcb, int device_no) {
     int i;
+	int index = -1;
     for(i = 0; i < FDT_SIZE; i++) {
-       if(pcb->fdt[i] == 0) {
+       if(pcb->fdt[i] == 0 && index == -1) {
            devsw device = device_table[device_no];
            kprintf("Opening device: %s\n", device.dvname);
            device.dvopen(pcb);
            pcb->fdt[i] = &device_table[device_no];
-           printFDT(pcb);
-           return i;
+           index = i;
+		   continue;
        }
+	   if (pcb->fdt[i] != 0 ) {
+		   kprintf("ERROR: One device is already in use\n");
+		   return -1;
+	   }
     }
-    return -1;
+
+    return index;
 }
 
 /* Return 0 if the file is successfully closed. Return -1 on error.
@@ -31,7 +37,6 @@ int di_open(struct PCB* pcb, int device_no) {
 int di_close(struct PCB *pcb, int fd) {
     if(fd >= 0 && fd < FDT_SIZE) {
         pcb->fdt[fd] = 0;
-        printFDT(pcb);
         return 0;
     } else {
         return -1;

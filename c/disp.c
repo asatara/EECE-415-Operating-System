@@ -212,8 +212,6 @@ extern void dispatch(void) {
 				int len = va_arg(argv, int);
 				process->rc = di_read(process, fd, buff, len);
 				process = find_next_ready_process();
-				kprintf("returning from di_read\n");
-				kprintf("found next rdy process\n");
                 break;
             }
             case(SYSIOCTL): {

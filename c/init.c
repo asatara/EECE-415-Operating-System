@@ -95,7 +95,7 @@ void initKeyboard(void) {
    d->dvread = kbd_uread;
    d->dvwrite = kbd_write;
    d->dvioctl = kbd_ioctl; 
-   devswToString(&device_table[0]);
+   //devswToString(&device_table[0]);
 }
 
 void initKeyboardEcho(void) {
