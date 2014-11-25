@@ -1,5 +1,8 @@
 /* kbd.c: keyboard device driver
  */
+
+#include "kbd.h"
+#include <xeroskernel.h>
 #define KEY_UP   0x80            /* If this bit is on then it is a key   */
                                  /* up event instead of a key down event */
 
@@ -24,6 +27,13 @@
 
 
 static int state; /* the state of the keyboard */
+
+static Buffer buffer;
+static Bool hasRequest = FALSE; // where sysread is being called or not
+static char* requestBuffer;
+static int requestLen;
+static int requestInd;
+static struct PCB* requestProcess;
 
 /*  Normal table to translate scan code  */
 unsigned char   kbcode[] = { 0,
@@ -152,6 +162,11 @@ main() {
 int kbd_open(void) {
     kprintf("Executing kbd_open.\n");
     enable_irq(1, 0);
+	buffer.head = 0;
+	buffer.tail = 0;
+	buffer.buff[0] = 0;
+	buffer.nb = 0;
+
     kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
     kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
     return 0;
@@ -166,9 +181,42 @@ int kbd_close(void) {
 unsigned int kbd_read(void) {  
     unsigned char code = inb(0x60);
     unsigned int ascii = kbtoa(code);
+	if (!hasRequest)
+		Buffer_Write(&buffer, (char)ascii);
+	else {
+		Buffer_Read(&buffer, &requestBuffer[requestInd]);
+		requestInd++;
+		if (requestInd == requestLen) {
+			removeFromQueue(&blocked_queue, requestProcess);
+			addToQueue(&ready_queue, requestProcess);
+			requestProcess->rc = requestInd;
+		}
+	}
     kprintf("%c",ascii);
     return ascii;
 }
+
+int kbd_uread(struct PCB* pcb, void* buff, int len) {
+	kprintf("Copying initial buffer\n");
+	hasRequest = TRUE;
+	requestBuffer = (char*)buff;
+	requestLen = len;
+	requestInd = 0;
+	requestProcess = pcb;
+
+	while (buffer.nb != 0) {
+		Buffer_Read(&buffer, &requestBuffer[requestInd]);
+		requestInd++;
+		if (requestInd == requestLen) {
+			removeFromQueue(&blocked_queue, requestProcess);
+			addToQueue(&ready_queue, requestProcess);
+			requestProcess->rc = requestInd;
+		}
+	}
+	return 0;
+}
+
+
 
 int kbd_write(void) {
     return -1;
@@ -193,4 +241,24 @@ void init_kbd(void) {
 */
 
 
+void Buffer_Read(Buffer* buff, char* target){
+	if (buff->nb == 0)
+		return;
+	
+	*target = buff->buff[buff->tail];
+	buff->nb--;
+	buff->tail++;
+	buff->tail = buff->tail % (BUFF_SIZE);
+	return;
+}
 
+void Buffer_Write(Buffer* buff, char data) {
+	if (buff->nb == BUFF_SIZE)
+		return;
+
+	buff->buff[buff->head] = data;
+	buff->nb++;
+	buff->head++;
+	buff->head = buff->head % (BUFF_SIZE);
+
+}

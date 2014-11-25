@@ -205,6 +205,15 @@ extern void dispatch(void) {
             }
             case(SYSREAD): {
                 kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSREAD.\n", process->pid);
+				va_list* argp = (va_list*)process->context->edx;
+				va_list argv = *argp;
+				int fd = va_arg(argv, int);
+				void* buff = va_arg(argv, void*);
+				int len = va_arg(argv, int);
+				process->rc = di_read(process, fd, buff, len);
+				kprintf("returning from di_read\n");
+				process = find_next_ready_process();
+				kprintf("found next rdy process\n");
                 break;
             }
             case(SYSIOCTL): {

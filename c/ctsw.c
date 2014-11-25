@@ -66,13 +66,13 @@ system_call contextswitch(struct PCB* p) {
 	#endif
 
 	if (interrupt) {
-		if (rc != 9)
 		// preserve the value of eax so we can restore it later
 		p->rc = p->context->eax;
 	}
     
 	if (FALSE)
 		k_stack = 0;
-
+	
+	//kprintf("Returning %d to disp\n", rc);
 	return rc;
 }

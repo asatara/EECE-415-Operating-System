@@ -92,7 +92,7 @@ void initKeyboard(void) {
    d->dvname = "keyboard";
    d->dvopen = kbd_open; 
    d->dvclose = kbd_close;
-   d->dvread = kbd_read;
+   d->dvread = kbd_uread;
    d->dvwrite = kbd_write;
    d->dvioctl = kbd_ioctl; 
    devswToString(&device_table[0]);

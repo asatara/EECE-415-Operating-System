@@ -1,6 +1,7 @@
 /* user.c : User processes
  */
 #include <xeroskernel.h>
+#include <kbd.h>
 extern void producer(void);
 void handler(void* frame);
 void handler2(void* frame);
@@ -9,6 +10,8 @@ void (*p)(void) = producer;
 void root(void) {
     int fd = sysopen(0);
     sysputs2("Root got fd %d\n", fd);
+	char buff[10];
+	sysread(fd, &buff, 10);
     sysclose(fd);
 	sysputs("Done\n");
 }

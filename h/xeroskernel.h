@@ -25,7 +25,6 @@ typedef	char    Bool;   /* Boolean type                  */
 #define MAX_NUMBER_OF_SIGS 0x20
 #define FDT_SIZE 0x4
 #define DEVICE_TABLE_SIZE 0x2
-#define BUFF_SIZE 0x4
 
 #define PAUSE int z;for(z=0;z < 2000000;z++)
 #define PAUSE10 int y;for(y=0;y < 10000000;y++)
@@ -100,19 +99,7 @@ typedef enum {
 	LONG
 } pause_length;
 
-/* This struct represents a device in the 'upper half' of the device driver.
- * DII (device independant interface) functions are mapped to upper half
- * device specific functions.
- */
-typedef struct {
-    int dvnum;
-    char *dvname;
-    int (*dvopen) (void);  // TODO: decide on the parameters for these function and add them in.
-    int (*dvclose) (void);
-    int (*dvread) (void);
-    int (*dvwrite) (void);
-    int (*dvioctl) (void);
-} devsw;
+struct Devsw;
 
 struct PCB {
     int pid;
@@ -128,8 +115,22 @@ struct PCB {
 	int signal_controller;
 	void* signal_table[MAX_NUMBER_OF_SIGS];
 	Bool is_in_signal;
-    devsw* fdt[FDT_SIZE];  // Fixed size file descriptor table.
+    struct Devsw* fdt[FDT_SIZE];  // Fixed size file descriptor table.
 };
+
+/* This struct represents a device in the 'upper half' of the device driver.
+ * DII (device independant interface) functions are mapped to upper half
+ * device specific functions.
+ */
+typedef struct Devsw {
+    int dvnum;
+    char *dvname;
+    int (*dvopen) (void);  // TODO: decide on the parameters for these function and add them in.
+    int (*dvclose) (void);
+    int (*dvread) (struct PCB* pcb, void* buff, int len);
+    int (*dvwrite) (void);
+    int (*dvioctl) (void);
+} devsw;
 
 struct Port {
     int in_use; 
@@ -138,17 +139,6 @@ struct Port {
 	struct PCB* owner;
 	struct PCB* blocked_list; // list of processes blocked waiting for this port
 };
-
-typedef struct {
-	char buff[BUFF_SIZE];
-	int head;
-	int tail;
-	Bool isFull;
-} Buffer;
-
-extern void Buffer_Read(Buffer* buff, char* target);
-extern void Buffer_write(Buffer* buff,  char* data);
-
 
 // for demo
 struct Msg {
@@ -267,7 +257,7 @@ extern void prepare_sigtramp(struct PCB* pcb);
 extern int di_open(struct PCB* pcb, int device_no);
 extern int di_close(struct PCB *pcb, int fd);
 extern void di_write(void);
-extern void di_read(void);
+extern int di_read(struct PCB* pcb, int fd, void* buff, int len);
 extern void di_ioctl(void);
 void devswToString(devsw *d); 
 

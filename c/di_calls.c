@@ -42,7 +42,21 @@ void di_write(void) {
 
 }
 
-void di_read(void) {
+int di_read(struct PCB* pcb, int fd, void* buff, int len) {
+	if (fd < 0 || fd > FDT_SIZE - 1)
+		return -1;
+	
+	if (pcb->fdt[fd] == NULL)
+		return -1;
+
+	if (len < 0)
+		return -1;
+
+	devsw* d = &device_table[fd];
+	addToQueue(&blocked_queue, pcb);
+	kprintf("Added to blocked queue\n");
+	kprintf("addr of devsw is %d\n", d);
+	return (d->dvread)(pcb, buff, len);
 
 }
 
@@ -85,29 +99,4 @@ void devswToString(devsw *d) {
 }
 
 
-void Buffer_Read(Buffer* buff, char* target){
 
-	if (buff->isFull)
-		buff->isFull = FALSE;
-
-	*target = buff->buff[buff->tail];
-	if (buff->head != buff->tail) {
-		buff->tail++;
-		buff->tail = buff->tail % (BUFF_SIZE);
-	}
-	return;
-}
-
-void Buffer_Write(Buffer* buff, char data) {
-	if (buff->isFull)
-		return;
-
-	buff->buff[buff->head] = data;
-
-	if (buff->tail == ( (buff->head + 1) % BUFF_SIZE))
-		buff->isFull = TRUE;
-	else {
-		buff->head++;
-		buff->head = buff->head % (BUFF_SIZE);
-	}
-}
