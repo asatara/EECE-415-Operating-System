@@ -129,7 +129,7 @@ typedef struct Devsw {
     int (*dvclose) (void);
     int (*dvread) (struct PCB* pcb, void* buff, int len, int e);
     int (*dvwrite) (void);
-    int (*dvioctl) (int command, va_list argv);
+    int (*dvioctl) (int command);
 } devsw;
 
 struct Port {
@@ -258,7 +258,7 @@ extern int di_open(struct PCB* pcb, int device_no);
 extern int di_close(struct PCB *pcb, int fd);
 extern void di_write(void);
 extern int di_read(struct PCB* pcb, int fd, void* buff, int len);
-extern int di_ioctl(struct PCB* pcb, int fd, int command, va_list argv);
+extern int di_ioctl(struct PCB* pcb, int fd, int command);
 void devswToString(devsw *d); 
 
 

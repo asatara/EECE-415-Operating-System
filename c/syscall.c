@@ -95,9 +95,9 @@ int sysread(int fd, void *buff, int bufflen) {
     return syscall(SYSREAD, fd, buff, bufflen);
 }
 
-//int sysioctl(int fd, unsigned long command, ...) {
-//    return syscall(SYSIOCTL, fd, command, ...);
-//}
+int sysioctl(int fd, unsigned long command, ...) {
+    return syscall(SYSIOCTL, fd, command);
+}
 
 int syscall(int call, ...) {
 	int result;

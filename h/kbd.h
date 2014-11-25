@@ -24,7 +24,7 @@ int kbd_uread(struct PCB* pcb, void* buff, int len, int e);
 int kbd_write(void);
 
 // Allows application to set EOF character.
-int kbd_ioctl(int commnad, va_list argv); 
+int kbd_ioctl(int command); 
 
 // Buffer struct for lower and upper half.
 typedef struct {

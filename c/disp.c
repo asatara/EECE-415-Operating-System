@@ -221,7 +221,7 @@ extern void dispatch(void) {
 				int fd = va_arg(argv, int);
 				int command = va_arg(argv, int);
 
-				process->rc = di_ioctl(process, fd, command, argv);
+				process->rc = di_ioctl(process, fd, command);
                 break;
             }
             case(KBD_INT): {

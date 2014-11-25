@@ -64,7 +64,7 @@ int di_read(struct PCB* pcb, int fd, void* buff, int len) {
 
 }
 
-int di_ioctl(struct PCB* pcb, int fd, int command, va_list argv) {
+int di_ioctl(struct PCB* pcb, int fd, int command) {
 	if (fd < 0 || fd > FDT_SIZE - 1)
 		return -1;
 	
@@ -72,7 +72,7 @@ int di_ioctl(struct PCB* pcb, int fd, int command, va_list argv) {
 		return -1;
 
 	devsw* d = pcb->fdt[fd];
-	int ret = (d->dvioctl)(command, argv);
+	int ret = (d->dvioctl)(command);
 
 	if (ret == 0) {
 		addToQueue(&blocked_queue, pcb);
