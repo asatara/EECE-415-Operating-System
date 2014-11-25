@@ -2,7 +2,6 @@
  */
 
 #include <xeroskernel.h>
-#include <stdarg.h>
 
 // return a pointer to the next process in the ready queue
 struct PCB* find_next_ready_process(void);
@@ -201,6 +200,7 @@ extern void dispatch(void) {
             }
             case(SYSWRITE): {
                 kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSWRITE.\n", process->pid);
+				process->rc = -1;
                 break;
             }
             case(SYSREAD): {
@@ -218,6 +218,12 @@ extern void dispatch(void) {
             }
             case(SYSIOCTL): {
                 kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSIOCTL.\n", process->pid);
+				va_list* argp = (va_list*)process->context->edx;
+				va_list argv = *argp;
+				int fd = va_arg(argv, int);
+				int command = va_arg(argv, int);
+
+				process->rc = di_ioctl(process, fd, command, argv);
                 break;
             }
             case(KBD_INT): {

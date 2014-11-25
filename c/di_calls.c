@@ -3,6 +3,7 @@
 
 #include <xeroskernel.h>
 
+
 int getFdbyDeviceno(int device_no);
 void printFDT(struct PCB *pcb);
 
@@ -54,13 +55,19 @@ int di_read(struct PCB* pcb, int fd, void* buff, int len) {
 
 	devsw* d = &device_table[fd];
 	addToQueue(&blocked_queue, pcb);
-	kprintf("Added to blocked queue\n");
-	kprintf("addr of devsw is %d\n", d);
 	return (d->dvread)(pcb, buff, len);
 
 }
 
-void di_ioctl(void) {
+int di_ioctl(struct PCB* pcb, int fd, int command, va_list argv) {
+	if (fd < 0 || fd > FDT_SIZE - 1)
+		return -1;
+	
+	if (pcb->fdt[fd] == NULL)
+		return -1;
+
+	devsw*d = &device_table[fd];
+	return (d->dvioctl)(command, argv);
 
 }
 
