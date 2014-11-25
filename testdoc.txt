@@ -7,7 +7,8 @@ respect to how new lines and carriage returns are treated. Line widths
 are to be limited to 80 characters.
 
 
-Test syssighanlder
+Test syssighandler()
+===================
 Description: Test the sig handler fail cases
 
 Case 1: If signal is invalid
@@ -23,7 +24,7 @@ Process 0: syssighandler returned -2
 
 
 Test syssigkill()
-
+================
 Case 1: if pid is invalid
 Process 0 requested system call SYS_KILL on pid 3333 with signal 5
 Process 0: syskill returned -90
@@ -37,11 +38,46 @@ Process 0 requested system call SYS_KILL on pid 200 with signal 2
 Process 0: syskill returned 0
 
 Test syssigwait()
-
+================
 Case 1:
 Process 0 requested system call SYS_SIG_WAIT
 Process 200 requested system call SYS_KILL on pid 0 with signal 2
 Process 0: syssigwait returned 2
 
+Test sysopen()
+=============
+Summary: call sysopen function with invalid arguments
+Sudo code: 
+filedescriptor = sysopen(1);
+filedescriptor = sysopen(1);
+Out:
+Process 0: opening device 1
+Process 0: ERROR: One device is already in use
+
+Test syswrite()
+==============
+Summary: call syswrite function with invalid file descriptor
+Sudo code: 
+filedescriptor - sysopen(1);
+filedescriptor = 33;  // assign and invalid file descriptor
+syswrite(filedescriptor, buff, 10);
+Out:
+Process 0: opening device 1
+Process 0: ERROR CODE -1: Invalid fd
+
+Test sysioctl()
+==============
 
 
+Test sysread()
+=============
+Summary: test sysread when there are more characters in the kernel buffer than
+the read has requested
+Sudo code: 
+filedescriptor - sysopen(1);
+syswrite(filedescriptor, buff, 5);
+printBuff(buff);
+Out:
+Process 0: opening device 1
+12345  // User continues to press keys but the kernel stops buffering them
+Output: 12345
