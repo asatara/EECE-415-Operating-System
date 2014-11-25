@@ -22,6 +22,36 @@ void root(void) {
 	sysclose(fd);
 	fd = sysopen(0);
 
+    result = sysread(fd, buff, 10);
+    sysputs("Output is: ");
+    int i;
+    for(i = 0; i < 10; i++) {
+        sysputs2("%c", buff[i]);
+    }
+    sysputs("\n");
+
+    result = sysread(fd, buff, 10);
+    sysputs("Output is: ");
+    for(i = 0; i < 10; i++) {
+        sysputs2("%c", buff[i]);
+    }
+    sysputs("\n");
+
+    result = sysread(fd, buff, 10);
+    sysputs("Output is: ");
+    for(i = 0; i < 10; i++) {
+        sysputs2("%c", buff[i]);
+    }
+    sysputs("\n");
+
+    // continues reading until EOF
+	char buf[100];
+    result = sysread(fd, buf, 100);
+
+    //Close device and open kbdecho
+	sysclose(fd);
+    fd = sysopen(1);
+
 	void (*oldhandler)(void*);
 	void (*newhandler)(void*) = handler;
 	syssighandler(18, newhandler, &oldhandler);
