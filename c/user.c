@@ -9,7 +9,6 @@ void (*p)(void) = producer;
 void root(void) {
     int fd = sysopen(0);
     sysputs2("Root got fd %d\n", fd);
-	for(;;);
     sysclose(fd);
 	sysputs("Done\n");
 }

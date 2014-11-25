@@ -158,15 +158,15 @@ int kbd_open(void) {
 }
 
 int kbd_close(void) {
-    // TODO: figure out how to disable the keyboard interrupt.
     kprintf("Executing kbd_close.\n");
+    enable_irq(1, 1);
     return 0;
 }
 
 unsigned int kbd_read(void) {  
     unsigned char code = inb(0x60);
     unsigned int ascii = kbtoa(code);
-    kprintf("%c ",ascii);
+    kprintf("%c",ascii);
     return ascii;
 }
 
@@ -180,26 +180,5 @@ int kbd_ioctl(void) {
 }
 
 void init_kbd(void) {
-    /*
-    set_evec(1, (unsigned long)_KeyboardEntryPoint);
-    __asm__ volatile(
-    "_KeyboardEntryPoint:" 
-        "mov 60h, %%edx;"
-        "in;"
-    :
-    : 
-    :"%eax", "%ecx"
-    ); 
-    */
+
 }
-
-
-
-/*
-    "_KeyboardEntryPoint:" 
-		"cli;" // turn off interrupts
-		"pusha;" // save registers
-        "movl $1, %%ecx;"  // indicate interrupt
-        "mov $18, %%eax;"  // Syscall 18
-        "jmp _CommonEntryPoint;"
-*/
