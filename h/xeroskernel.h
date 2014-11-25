@@ -1,5 +1,6 @@
 /* xeroskernel.h - disable, enable, halt, restore, isodd, min, max */
 
+#include <stdarg.h>
 /* Symbolic constants used throughout Xinu */
 
 typedef	char    Bool;   /* Boolean type                  */
@@ -129,7 +130,7 @@ typedef struct Devsw {
     int (*dvclose) (void);
     int (*dvread) (struct PCB* pcb, void* buff, int len);
     int (*dvwrite) (void);
-    int (*dvioctl) (void);
+    int (*dvioctl) (int command, va_list argv);
 } devsw;
 
 struct Port {
@@ -258,7 +259,7 @@ extern int di_open(struct PCB* pcb, int device_no);
 extern int di_close(struct PCB *pcb, int fd);
 extern void di_write(void);
 extern int di_read(struct PCB* pcb, int fd, void* buff, int len);
-extern void di_ioctl(void);
+extern int di_ioctl(struct PCB* pcb, int fd, int command, va_list argv);
 void devswToString(devsw *d); 
 
 

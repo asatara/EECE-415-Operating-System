@@ -236,7 +236,7 @@ int kbd_write(void) {
 }
 
 
-int kbd_ioctl(void) {
+int kbd_ioctl(int command, va_list argv) {
     return 0;
 }
 
