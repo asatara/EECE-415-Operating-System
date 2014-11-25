@@ -32,10 +32,10 @@ system_call contextswitch(struct PCB* p) {
 		"movl ESP, %%esp;"
 		"popa;"
 		"iret;"
-    "_KeyboardEntryPoint:" 
-		"cli;" // turn off interrupts
-		"pusha;" // save registers
-        "movl $1, %%ecx;"  // indicate interrupt
+    "_KeyboardEntryPoint:"  // Keyboard interrupt entry point. 
+		"cli;" // Temporarily turn off interrupts.
+		"pusha;"
+        "movl $1, %%ecx;"  // Indicate interrupt has occurred.
         "movl $20, %%eax;"  // KBD_INT
         "jmp _CommonEntryPoint;"
 	"_TimerEntryPoint:" 
