@@ -36,7 +36,7 @@ system_call contextswitch(struct PCB* p) {
 		"cli;" // turn off interrupts
 		"pusha;" // save registers
         "movl $1, %%ecx;"  // indicate interrupt
-        "movl $1, %%eax;"  // keyboard interrupt  
+        "movl $20, %%eax;"  // KBD_INT
         "jmp _CommonEntryPoint;"
 	"_TimerEntryPoint:" 
 		"cli;" // turn off interrupts
@@ -67,15 +67,10 @@ system_call contextswitch(struct PCB* p) {
 
 	if (interrupt) {
 		if (rc != 9)
-	        kprintf("Interrupt occured: %d!\n", rc);
 		// preserve the value of eax so we can restore it later
 		p->rc = p->context->eax;
 	}
     
-    if(rc == 1 && interrupt == 1) {
-       kprintf("\n\nKeyboard interrupt!\n\n"); 
-    }
-
 	if (FALSE)
 		k_stack = 0;
 
