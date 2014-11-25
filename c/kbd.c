@@ -161,7 +161,6 @@ main() {
 // keyboard microcontroller: port 0x60
 // onboard microcontroller: port 0x64
 int kbd_open(struct PCB* pcb) {
-    kprintf("Executing kbd_open.\n");
 	requestProcess = pcb;
     enable_irq(1, 0);
 	buffer.head = 0;
@@ -169,13 +168,13 @@ int kbd_open(struct PCB* pcb) {
 	buffer.buff[0] = 0;
 	buffer.nb = 0;
 	request = NONE;
-    kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
-    kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
+    //kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
+    //kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
     return 0;
 }
 
 int kbd_close(void) {
-    kprintf("Executing kbd_close.\n");
+    //kprintf("Executing kbd_close.\n");
     enable_irq(1, 1);
     return 0;
 }
@@ -239,7 +238,6 @@ int kbd_uread(struct PCB* pcb, void* buff, int len) {
 	requestLen = len;
 	requestInd = 0;
 	requestProcess = pcb;
-	kprintf("buffer addr is %d\n", requestBuffer);
 
 	while (buffer.nb != 0) {
 		requestBuffer[requestInd] = Buffer_Read(&buffer);
