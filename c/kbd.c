@@ -152,11 +152,12 @@ unsigned int kbtoa( unsigned char code )
 }
 
 
-main() {
+void main() {
   kbtoa(LSHIFT);
   kprintf("45 = %c\n", kbtoa(45));
   kbtoa(LSHIFT | KEY_UP);
   kprintf("45 = %c\n", kbtoa(45));
+  return;
 }
 
 // keyboard microcontroller: port 0x60
@@ -246,9 +247,9 @@ int kbd_uread(struct PCB* pcb, void* buff, int len, int e) {
 		requestBuffer[requestInd] = Buffer_Read(&buffer);
 		requestInd++;
 		if (requestInd == requestLen) {
-			//removeFromQueue(&blocked_queue, requestProcess);
-			//addToQueue(&ready_queue, requestProcess);
-			//requestProcess->rc = requestInd;
+			removeFromQueue(&blocked_queue, requestProcess);
+			addToQueue(&ready_queue, requestProcess);
+			requestProcess->rc = requestInd;
 		}
 	}
 	return 0;
@@ -270,7 +271,7 @@ int kbd_ioctl(int command, va_list argv) {
 
 char Buffer_Read(Buffer* buff){
 	if (buff->nb == 0)
-		return;
+		return 0;
 	
 	char data = buff->buff[buff->tail];
 	buff->nb--;

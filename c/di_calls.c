@@ -7,6 +7,7 @@
 int getFdbyDeviceno(int device_no);
 void printFDT(struct PCB *pcb);
 
+extern struct PCB* find_next_ready_process(void);
 
 /* Returns the file descriptor for the device the process opened. If the open
  * failed, return -1.
