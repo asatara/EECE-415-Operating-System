@@ -18,7 +18,7 @@ int di_open(struct PCB* pcb, int device_no) {
            devsw device = device_table[device_no];
            kprintf("Opening device: %s\n", device.dvname);
            device.dvopen();
-           pcb->fdt[i] = &device;
+           pcb->fdt[i] = &device_table[device_no];
            printFDT(pcb);
            return i;
        }
@@ -53,7 +53,7 @@ int di_read(struct PCB* pcb, int fd, void* buff, int len) {
 	if (len < 0)
 		return -1;
 
-	devsw* d = &device_table[fd];
+	devsw* d = pcb->fdt[fd];
 	addToQueue(&blocked_queue, pcb);
 	return (d->dvread)(pcb, buff, len);
 
@@ -66,7 +66,7 @@ int di_ioctl(struct PCB* pcb, int fd, int command, va_list argv) {
 	if (pcb->fdt[fd] == NULL)
 		return -1;
 
-	devsw*d = &device_table[fd];
+	devsw* d = pcb->fdt[fd];
 	return (d->dvioctl)(command, argv);
 
 }
