@@ -95,7 +95,6 @@ typedef enum {
 
 // used for testing
 typedef enum {
-	NONE,
 	SHORT,
 	LONG
 } pause_length;
@@ -126,7 +125,7 @@ struct PCB {
 typedef struct Devsw {
     int dvnum;
     char *dvname;
-    int (*dvopen) (void);  // TODO: decide on the parameters for these function and add them in.
+    int (*dvopen) (struct PCB* pcb);  // TODO: decide on the parameters for these function and add them in.
     int (*dvclose) (void);
     int (*dvread) (struct PCB* pcb, void* buff, int len);
     int (*dvwrite) (void);

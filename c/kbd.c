@@ -29,11 +29,12 @@
 static int state; /* the state of the keyboard */
 
 static Buffer buffer;
-static Bool hasRequest = FALSE; // where sysread is being called or not
+request_type request = NONE;
 static char* requestBuffer;
 static int requestLen;
 static int requestInd;
 static struct PCB* requestProcess;
+static unsigned int _EOF = 10;
 
 /*  Normal table to translate scan code  */
 unsigned char   kbcode[] = { 0,
@@ -159,14 +160,15 @@ main() {
 
 // keyboard microcontroller: port 0x60
 // onboard microcontroller: port 0x64
-int kbd_open(void) {
+int kbd_open(struct PCB* pcb) {
     kprintf("Executing kbd_open.\n");
+	requestProcess = pcb;
     enable_irq(1, 0);
 	buffer.head = 0;
 	buffer.tail = 0;
 	buffer.buff[0] = 0;
 	buffer.nb = 0;
-
+	request = NONE;
     kprintf("Onboard controller status(port 0x64): %x\n", inb(0x64));
     kprintf("Keyboard controller status(port 0x60): %x\n", inb(0x60));
     return 0;
@@ -186,37 +188,53 @@ int kbd_close(void) {
 unsigned int kbd_read(void) {  
     unsigned char code = inb(0x60);
     unsigned int ascii = kbtoa(code);
-	if (!hasRequest)
-		Buffer_Write(&buffer, (char)ascii);
-	else {
-		if (!(code & KEY_UP) && code != 0x2a && code != 0x36 && code !=0x38 && code != 0x1d
-                && code != 0x3a) {
-			requestBuffer[requestInd] = (char)ascii;
-			requestInd++;
+	switch (request) {
+		case(NONE): {
+			Buffer_Write(&buffer, (char)ascii);
+			break;
 		}
-		if (requestInd == requestLen) {
-			removeFromQueue(&blocked_queue, requestProcess);
-			addToQueue(&ready_queue, requestProcess);
-			requestProcess->rc = requestInd;
-			hasRequest = FALSE;
-		} else if(code == 0x20 && state & INCTL) {
-			removeFromQueue(&blocked_queue, requestProcess);
-			addToQueue(&ready_queue, requestProcess);
-			requestProcess->rc = requestInd;
-            hasRequest = FALSE;
-        } else if(10 == ascii) {
-			removeFromQueue(&blocked_queue, requestProcess);
-			addToQueue(&ready_queue, requestProcess);
-			requestProcess->rc = requestInd;
-            hasRequest = FALSE;
-        }
+		case(READ): {
+			if (!(code & KEY_UP) && code != 0x2a && code != 0x36 && code !=0x38 && code != 0x1d
+					&& code != 0x3a) {
+				requestBuffer[requestInd] = (char)ascii;
+				requestInd++;
+			}
+			if (requestInd == requestLen) {
+				removeFromQueue(&blocked_queue, requestProcess);
+				addToQueue(&ready_queue, requestProcess);
+				requestProcess->rc = requestInd;
+				request = NONE;
+			} else if(code == 0x20 && state & INCTL) {
+				removeFromQueue(&blocked_queue, requestProcess);
+				addToQueue(&ready_queue, requestProcess);
+				requestProcess->rc = requestInd;
+				request = NONE;
+			} else if(10 == ascii) {
+				removeFromQueue(&blocked_queue, requestProcess);
+				addToQueue(&ready_queue, requestProcess);
+				requestProcess->rc = requestInd;
+				request = NONE;
+			}
+			break;
+		}
+		case(IOCTL): {
+			if (!(code & KEY_UP) && code != 0x2a && code != 0x36 && code !=0x38 && code != 0x1d
+					&& code != 0x3a) {
+				_EOF = ascii;
+				removeFromQueue(&blocked_queue, requestProcess);
+				addToQueue(&ready_queue, requestProcess);
+				requestProcess->rc = 0;
+			}
+		}
 	}
-    kprintf("%c",ascii);
-    return ascii;
+
+	kprintf("%c", ascii);
+	return ascii;
 }
 
+
 int kbd_uread(struct PCB* pcb, void* buff, int len) {
-	hasRequest = TRUE;
+	request = READ;
 	requestBuffer = (char*)buff;
 	requestLen = len;
 	requestInd = 0;
@@ -242,7 +260,11 @@ int kbd_write(void) {
 }
 
 
-int kbd_ioctl(int commnad, va_list argv) {
+int kbd_ioctl(int command, va_list argv) {
+	if (command != 53)
+		return -1;
+	
+	request = IOCTL;
     return 0;
 }
 

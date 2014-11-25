@@ -5,7 +5,7 @@
 
 void sleep(struct PCB* process) {
 
-	kprintf_log(SLEEP_LOG, NONE, "Adding pid %d to sleep queue\n", process->pid);
+	kprintf_log(SLEEP_LOG, 0, "Adding pid %d to sleep queue\n", process->pid);
 	if (sleep_queue == NULL) {
 		sleep_queue = process;
 		return;

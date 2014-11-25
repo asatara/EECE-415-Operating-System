@@ -7,7 +7,7 @@ extern struct PCB;
 #include <stdarg.h>
 
 void init_kbd(void);
-int kbd_open(void);
+int kbd_open(struct PCB* pcb);
 int kbd_close(void); 
 unsigned int kbd_read(void); 
 int kbd_uread(struct PCB* pcb, void* buff, int len);
@@ -21,6 +21,13 @@ typedef struct {
 	int nb;
 
 } Buffer;
+
+typedef enum {
+	NONE,
+	READ,
+	IOCTL
+} request_type;
+	
 
 char Buffer_Read(Buffer* buff);
 void Buffer_write(Buffer* buff,  char* data);

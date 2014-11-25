@@ -17,7 +17,7 @@ int di_open(struct PCB* pcb, int device_no) {
        if(pcb->fdt[i] == 0) {
            devsw device = device_table[device_no];
            kprintf("Opening device: %s\n", device.dvname);
-           device.dvopen();
+           device.dvopen(pcb);
            pcb->fdt[i] = &device_table[device_no];
            printFDT(pcb);
            return i;
@@ -67,8 +67,14 @@ int di_ioctl(struct PCB* pcb, int fd, int command, va_list argv) {
 		return -1;
 
 	devsw* d = pcb->fdt[fd];
-	return (d->dvioctl)(command, argv);
+	int ret = (d->dvioctl)(command, argv);
 
+	if (ret == 0) {
+		addToQueue(&blocked_queue, pcb);
+		pcb = find_next_ready_process();
+	}
+
+	return 0;
 }
 
 

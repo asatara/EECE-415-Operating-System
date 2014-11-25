@@ -39,7 +39,7 @@ extern void dispatch(void) {
 				int size = va_arg(argv, int);
 				int pid = create(new_process, size);
 				process->rc = pid;
-				kprintf_log(DEMO_LOG, NONE, "Process %d requested service SYS_CREATE. Process %d has been created.\n", process->pid, pid);
+				kprintf_log(DEMO_LOG, 0, "Process %d requested service SYS_CREATE. Process %d has been created.\n", process->pid, pid);
 				break;
 			}
 			case(SYS_STOP): {
@@ -211,8 +211,8 @@ extern void dispatch(void) {
 				void* buff = va_arg(argv, void*);
 				int len = va_arg(argv, int);
 				process->rc = di_read(process, fd, buff, len);
-				kprintf("returning from di_read\n");
 				process = find_next_ready_process();
+				kprintf("returning from di_read\n");
 				kprintf("found next rdy process\n");
                 break;
             }
