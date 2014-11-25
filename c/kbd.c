@@ -184,12 +184,13 @@ unsigned int kbd_read(void) {
 	if (!hasRequest)
 		Buffer_Write(&buffer, (char)ascii);
 	else {
-		Buffer_Read(&buffer, &requestBuffer[requestInd]);
+		requestBuffer[requestInd] = (char)ascii;
 		requestInd++;
 		if (requestInd == requestLen) {
 			removeFromQueue(&blocked_queue, requestProcess);
 			addToQueue(&ready_queue, requestProcess);
 			requestProcess->rc = requestInd;
+			hasRequest = FALSE;
 		}
 	}
     kprintf("%c",ascii);
@@ -205,7 +206,7 @@ int kbd_uread(struct PCB* pcb, void* buff, int len) {
 	requestProcess = pcb;
 
 	while (buffer.nb != 0) {
-		Buffer_Read(&buffer, &requestBuffer[requestInd]);
+		requestBuffer[requestInd] = Buffer_Read(&buffer);
 		requestInd++;
 		if (requestInd == requestLen) {
 			removeFromQueue(&blocked_queue, requestProcess);
@@ -241,15 +242,15 @@ void init_kbd(void) {
 */
 
 
-void Buffer_Read(Buffer* buff, char* target){
+char Buffer_Read(Buffer* buff){
 	if (buff->nb == 0)
 		return;
 	
-	*target = buff->buff[buff->tail];
+	char data = buff->buff[buff->tail];
 	buff->nb--;
 	buff->tail++;
 	buff->tail = buff->tail % (BUFF_SIZE);
-	return;
+	return data;
 }
 
 void Buffer_Write(Buffer* buff, char data) {

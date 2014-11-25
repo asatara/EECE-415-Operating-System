@@ -21,6 +21,6 @@ typedef struct {
 
 } Buffer;
 
-void Buffer_Read(Buffer* buff, char* target);
+char Buffer_Read(Buffer* buff);
 void Buffer_write(Buffer* buff,  char* data);
 
