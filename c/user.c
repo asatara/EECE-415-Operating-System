@@ -8,7 +8,7 @@ void handler2(void* frame);
 void (*p)(void) = producer;
 
 void root(void) {
-    int fd = sysopen(0);
+    int fd = sysopen(1);
     sysputs2("Root got fd %d\n", fd);
 	char buff[10];
 	kprintf("Buffer addr is %d\n", &buff[2]);

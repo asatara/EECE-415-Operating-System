@@ -55,7 +55,7 @@ int di_read(struct PCB* pcb, int fd, void* buff, int len) {
 
 	devsw* d = pcb->fdt[fd];
 	addToQueue(&blocked_queue, pcb);
-	return (d->dvread)(pcb, buff, len);
+	return (d->dvread)(pcb, buff, len, d->dvnum);
 
 }
 
