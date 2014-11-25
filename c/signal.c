@@ -12,6 +12,7 @@ void sigtramp(void (*handler)(void *), void *context, void *old_sp) {
 
 int signal(int pid, int signalNum) {
 	struct PCB* pcb = find_pcb(pid);
+	kprintf("signaling %d\n", signalNum);
 
 	// check if pid is valid
 	if (pcb->pid == -1 || pcb->pid != pid)
@@ -20,9 +21,13 @@ int signal(int pid, int signalNum) {
 	if (signalNum < 0 || signalNum > MAX_NUMBER_OF_SIGS - 1)
 		return -2;
 
+	if (pcb->signal_table[signalNum] == NULL) {
+		kprintf("No signal handler found\n");
+		return 0;
+	}
+
 	
 	if (pcb->state == BLOCKED) {
-		kprintf("printing port 5 blocked queue\n", pcb->pid);
 		struct PCB* result = removeFromQueue(pcb->blocked_queue, pcb);
 		if (result == NULL) {
 			kprintf("ERROR: pcb status is blocked by cannot find pcb in blocked queue\n");			
@@ -34,9 +39,7 @@ int signal(int pid, int signalNum) {
 		kprintf("Adding pid %d to ready queue\n", pcb->pid);
 	}
 
-	if (pcb->signal_table[signalNum] == NULL)
-		return 0;
-
+	
 	
 	if (pcb->state == SIG_WAIT) {
 		pcb->state = READY;
@@ -107,6 +110,7 @@ void prepare_sigtramp(struct PCB* pcb) {
 }
 
 // returns index of highest bit set in integer
+/*
 int hibit(unsigned int n) {
     n |= (n >>  1);
     n |= (n >>  2);
@@ -114,4 +118,14 @@ int hibit(unsigned int n) {
     n |= (n >>  8);
     n |= (n >> 16);
     return n - (n >> 1) - 1;
+}
+*/
+
+int hibit(unsigned int n) {
+	unsigned r = 0;
+
+	while (n >>= 1) {
+		    r++;
+	}
+	return r;
 }

@@ -112,7 +112,7 @@ struct PCB {
 	int ticks; // number of sleep ticks left when sleeping
 	void* msg; // used for IPC
 	struct PCB** blocked_queue; // If blocked, pcb is in this blocked_queue
-	int signal_controller;
+	unsigned int signal_controller;
 	void* signal_table[MAX_NUMBER_OF_SIGS];
 	Bool is_in_signal;
     struct Devsw* fdt[FDT_SIZE];  // Fixed size file descriptor table.

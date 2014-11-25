@@ -15,6 +15,15 @@ void root(void) {
 
 	int fd2 = sysopen(1);
 	int fd3 = sysopen(0);
+	sysclose(fd);
+	fd = sysopen(1);
+
+	void (*oldhandler)(void*);
+	void (*newhandler)(void*) = handler;
+	syssighandler(18, newhandler, &oldhandler);
+	syscreate(p, 3000);
+	result = sysread(fd, buff, 10);
+	sysputs2("The result of sysread is %d\n", result);
 
 	sysclose(fd);
 }
@@ -24,20 +33,13 @@ void idle(void) {
 }
 
 extern void producer(void) {
-	int pid = sysgetpid();
-	sysputs2("Process %d is alive.\n", pid);
-	sysportcreate(5);
-	sysyield();
-	int result = syskill(0, 2);
-	kprintf("syskill returned: %d\n", result);
-	result = syskill(0, 3);
-	kprintf("syskill returned: %d\n", result);
-	sysyield();
-}
+	syssleep(1000);
+	syskill(0, 20);
+	syskill(0, 18);
+	}
 
 void handler(void* frame) {
-	kprintf("Signal For handler1 received\n");
-	sysyield();
+	kprintf("Signal 18 received\n");
 }
 
 void handler2(void* frame) {

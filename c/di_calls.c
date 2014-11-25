@@ -60,6 +60,8 @@ int di_read(struct PCB* pcb, int fd, void* buff, int len) {
 
 	devsw* d = pcb->fdt[fd];
 	addToQueue(&blocked_queue, pcb);
+	pcb->blocked_queue = &blocked_queue;
+	pcb->state = BLOCKED;
 	return (d->dvread)(pcb, buff, len, d->dvnum);
 
 }

@@ -241,14 +241,14 @@ int kbd_uread(struct PCB* pcb, void* buff, int len, int e) {
 	requestInd = 0;
 	requestProcess = pcb;
     ECHO = e;
-
+	
 	while (buffer.nb != 0) {
 		requestBuffer[requestInd] = Buffer_Read(&buffer);
 		requestInd++;
 		if (requestInd == requestLen) {
-			removeFromQueue(&blocked_queue, requestProcess);
-			addToQueue(&ready_queue, requestProcess);
-			requestProcess->rc = requestInd;
+			//removeFromQueue(&blocked_queue, requestProcess);
+			//addToQueue(&ready_queue, requestProcess);
+			//requestProcess->rc = requestInd;
 		}
 	}
 	return 0;
