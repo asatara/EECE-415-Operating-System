@@ -177,14 +177,20 @@ int kbd_close(void) {
     enable_irq(1, 1);
     return 0;
 }
+#define LSHIFT  0x2a
+#define RSHIFT  0x36
+#define LMETA   0x38
 
+#define LCTL    0x1d
+#define CAPSL   0x3a
 unsigned int kbd_read(void) {  
     unsigned char code = inb(0x60);
     unsigned int ascii = kbtoa(code);
 	if (!hasRequest)
 		Buffer_Write(&buffer, (char)ascii);
 	else {
-		if (!(code & KEY_UP)) {
+		if (!(code & KEY_UP) && code != 0x2a && code != 0x36 && code !=0x38 && code != 0x1d
+                && code != 0x3a) {
 			requestBuffer[requestInd] = (char)ascii;
 			requestInd++;
 		}
@@ -205,7 +211,7 @@ unsigned int kbd_read(void) {
             hasRequest = FALSE;
         }
 	}
-    kprintf("%d",ascii);
+    kprintf("%c",ascii);
     return ascii;
 }
 
@@ -236,7 +242,7 @@ int kbd_write(void) {
 }
 
 
-int kbd_ioctl(int command, va_list argv) {
+int kbd_ioctl(int commnad, va_list argv) {
     return 0;
 }
 
