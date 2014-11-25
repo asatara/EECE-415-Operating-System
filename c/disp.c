@@ -184,7 +184,7 @@ extern void dispatch(void) {
 				break;
 			}
             case(SYSOPEN): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSOPEN.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYSOPEN.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int device_no = va_arg(argv, int);
@@ -192,7 +192,7 @@ extern void dispatch(void) {
                 break;
             }
             case(SYSCLOSE): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSCLOSE.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYSCLOSE.\n", process->pid);
                 va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int fd = va_arg(argv, int);
@@ -204,7 +204,7 @@ extern void dispatch(void) {
                 break;
             }
             case(SYSREAD): {
-                kprintf_log(DISP_LOG, SHORT,"Process %d requested system call SYSREAD.\n", process->pid);
+                kprintf_log(DISP_LOG, 0,"Process %d requested system call SYSREAD.\n", process->pid);
 				va_list* argp = (va_list*)process->context->edx;
 				va_list argv = *argp;
 				int fd = va_arg(argv, int);

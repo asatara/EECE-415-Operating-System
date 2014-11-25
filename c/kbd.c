@@ -184,8 +184,10 @@ unsigned int kbd_read(void) {
 	if (!hasRequest)
 		Buffer_Write(&buffer, (char)ascii);
 	else {
-		requestBuffer[requestInd] = (char)ascii;
-		requestInd++;
+		if (!(code & KEY_UP)) {
+			requestBuffer[requestInd] = (char)ascii;
+			requestInd++;
+		}
 		if (requestInd == requestLen) {
 			removeFromQueue(&blocked_queue, requestProcess);
 			addToQueue(&ready_queue, requestProcess);
@@ -198,12 +200,12 @@ unsigned int kbd_read(void) {
 }
 
 int kbd_uread(struct PCB* pcb, void* buff, int len) {
-	kprintf("Copying initial buffer\n");
 	hasRequest = TRUE;
 	requestBuffer = (char*)buff;
 	requestLen = len;
 	requestInd = 0;
 	requestProcess = pcb;
+	kprintf("buffer addr is %d\n", requestBuffer);
 
 	while (buffer.nb != 0) {
 		requestBuffer[requestInd] = Buffer_Read(&buffer);

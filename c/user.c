@@ -11,6 +11,7 @@ void root(void) {
     int fd = sysopen(0);
     sysputs2("Root got fd %d\n", fd);
 	char buff[10];
+	kprintf("Buffer addr is %d\n", &buff[2]);
 	sysread(fd, buff, 10);
 	sysputs2("Buffer received: %s\n", buff);
     sysclose(fd);
