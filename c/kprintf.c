@@ -42,7 +42,7 @@ int kprintf_log(int log_level, int pause_length, char* fmt, ...)
 
     _doprnt(fmt, (void *) ap,  kputc, 0);
 
-	if (pause_length > NONE)
+	if (pause_length > 0)
 		_pause(pause_length);
 
 	return 1;

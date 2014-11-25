@@ -32,7 +32,7 @@ typedef	char    Bool;   /* Boolean type                  */
 
 // Logging levels
 #define MEM_LOG    0
-#define DISP_LOG   1
+#define DISP_LOG   0
 #define FLOW_LOG   0
 #define QUEUE_lOG  0
 #define TABEL_LOG  0

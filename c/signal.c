@@ -12,7 +12,6 @@ void sigtramp(void (*handler)(void *), void *context, void *old_sp) {
 
 int signal(int pid, int signalNum) {
 	struct PCB* pcb = find_pcb(pid);
-	kprintf("signaling %d\n", signalNum);
 
 	// check if pid is valid
 	if (pcb->pid == -1 || pcb->pid != pid)
@@ -22,7 +21,6 @@ int signal(int pid, int signalNum) {
 		return -2;
 
 	if (pcb->signal_table[signalNum] == NULL) {
-		kprintf("No signal handler found\n");
 		return 0;
 	}
 
@@ -36,14 +34,12 @@ int signal(int pid, int signalNum) {
 		pcb->rc = -452;
 		pcb->state = READY;
 		addToQueue(&ready_queue, pcb);
-		kprintf("Adding pid %d to ready queue\n", pcb->pid);
 	}
 
 	
 	
 	if (pcb->state == SIG_WAIT) {
 		pcb->state = READY;
-		kprintf("Adding pid %d to ready queue\n", pcb->pid);
 		addToQueue(&ready_queue, pcb);
 		pcb->rc = signalNum;
 	}
@@ -59,7 +55,6 @@ void prepare_sigtramp(struct PCB* pcb) {
 	int signal = hibit(pcb->signal_controller); // get highest bit
 	pcb->signal_controller &= ~(1 << signal); // toggle signal off
 	void* handler = pcb->signal_table[signal];
-	kprintf("Preparing for signal %d\n", signal);
 	int* old_sp;
 	old_sp = (int*)pcb->context->esp;
 

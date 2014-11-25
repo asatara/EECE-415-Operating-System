@@ -17,14 +17,14 @@ int di_open(struct PCB* pcb, int device_no) {
     for(i = 0; i < FDT_SIZE; i++) {
        if(pcb->fdt[i] == 0 && index == -1) {
            devsw device = device_table[device_no];
-           kprintf("Opening device: %s\n", device.dvname);
+           kprintf("\tOpening device: %s\n", device.dvname);
            device.dvopen(pcb);
            pcb->fdt[i] = &device_table[device_no];
            index = i;
 		   continue;
        }
 	   if (pcb->fdt[i] != 0 ) {
-		   kprintf("ERROR: One device is already in use\n");
+		   kprintf("\tERROR: One device is already in use\n");
 		   return -1;
 	   }
     }
