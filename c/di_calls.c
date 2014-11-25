@@ -84,3 +84,30 @@ void devswToString(devsw *d) {
         d->dvwrite, d->dvread, d->dvioctl);
 }
 
+
+void Buffer_Read(Buffer* buff, char* target){
+
+	if (buff->isFull)
+		buff->isFull = FALSE;
+
+	*target = buff->buff[buff->tail];
+	if (buff->head != buff->tail) {
+		buff->tail++;
+		buff->tail = buff->tail % (BUFF_SIZE);
+	}
+	return;
+}
+
+void Buffer_Write(Buffer* buff, char data) {
+	if (buff->isFull)
+		return;
+
+	buff->buff[buff->head] = data;
+
+	if (buff->tail == ( (buff->head + 1) % BUFF_SIZE))
+		buff->isFull = TRUE;
+	else {
+		buff->head++;
+		buff->head = buff->head % (BUFF_SIZE);
+	}
+}

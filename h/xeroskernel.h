@@ -25,6 +25,7 @@ typedef	char    Bool;   /* Boolean type                  */
 #define MAX_NUMBER_OF_SIGS 0x20
 #define FDT_SIZE 0x4
 #define DEVICE_TABLE_SIZE 0x2
+#define BUFF_SIZE 0x4
 
 #define PAUSE int z;for(z=0;z < 2000000;z++)
 #define PAUSE10 int y;for(y=0;y < 10000000;y++)
@@ -136,6 +137,17 @@ struct Port {
 	struct PCB* owner;
 	struct PCB* blocked_list; // list of processes blocked waiting for this port
 };
+
+typedef struct {
+	char buff[BUFF_SIZE];
+	int head;
+	int tail;
+	Bool isFull;
+} Buffer;
+
+extern void Buffer_Read(Buffer* buff, char* target);
+extern void Buffer_write(Buffer* buff,  char* data);
+
 
 // for demo
 struct Msg {
