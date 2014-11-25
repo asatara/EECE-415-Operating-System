@@ -193,9 +193,19 @@ unsigned int kbd_read(void) {
 			addToQueue(&ready_queue, requestProcess);
 			requestProcess->rc = requestInd;
 			hasRequest = FALSE;
-		}
+		} else if(code == 0x20 && state & INCTL) {
+			removeFromQueue(&blocked_queue, requestProcess);
+			addToQueue(&ready_queue, requestProcess);
+			requestProcess->rc = requestInd;
+            hasRequest = FALSE;
+        } else if(10 == ascii) {
+			removeFromQueue(&blocked_queue, requestProcess);
+			addToQueue(&ready_queue, requestProcess);
+			requestProcess->rc = requestInd;
+            hasRequest = FALSE;
+        }
 	}
-    kprintf("%c",ascii);
+    kprintf("%d",ascii);
     return ascii;
 }
 
@@ -234,15 +244,6 @@ void init_kbd(void) {
 
 
 }
-/*
-    "_KeyboardEntryPoint:" 
-		"cli;" // turn off interrupts
-		"pusha;" // save registers
-        "movl $1, %%ecx;"  // indicate interrupt
-        "mov $18, %%eax;"  // Syscall 18
-        "jmp _CommonEntryPoint;"
-*/
-
 
 char Buffer_Read(Buffer* buff){
 	if (buff->nb == 0)
