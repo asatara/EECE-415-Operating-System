@@ -152,11 +152,12 @@ unsigned int kbtoa( unsigned char code )
 }
 
 
-main() {
+void main(void) {
   kbtoa(LSHIFT);
   kprintf("45 = %c\n", kbtoa(45));
   kbtoa(LSHIFT | KEY_UP);
   kprintf("45 = %c\n", kbtoa(45));
+  return;
 }
 
 // keyboard microcontroller: port 0x60
@@ -271,7 +272,7 @@ int kbd_ioctl(int command) {
 
 char Buffer_Read(Buffer* buff){
 	if (buff->nb == 0)
-		return;
+		return 0;
 	
 	char data = buff->buff[buff->tail];
 	buff->nb--;

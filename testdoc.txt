@@ -7,3 +7,41 @@ respect to how new lines and carriage returns are treated. Line widths
 are to be limited to 80 characters.
 
 
+Test syssighanlder
+Description: Test the sig handler fail cases
+
+Case 1: If signal is invalid
+
+Process 0 requested system call SYS_SIG_HANDLE on signal -1
+Process 0: syssighandler returned -1
+
+Case 2: if hanlder is invalid (less than 0)
+
+Process 0 requested system call SYS_SIG_HANDLE on signal -1
+Process 0: syssighandler returned -2
+
+
+
+Test syssigkill()
+
+Case 1: if pid is invalid
+Process 0 requested system call SYS_KILL on pid 3333 with signal 5
+Process 0: syskill returned -90
+
+case 2: invalid signal
+Process 0 requested system call SYS_KILL on pid 200 with signal -1
+Process 0: syskill returned -68
+
+case 3: successful signal
+Process 0 requested system call SYS_KILL on pid 200 with signal 2
+Process 0: syskill returned 0
+
+Test syssigwait()
+
+Case 1:
+Process 0 requested system call SYS_SIG_WAIT
+Process 200 requested system call SYS_KILL on pid 0 with signal 2
+Process 0: syssigwait returned 2
+
+
+

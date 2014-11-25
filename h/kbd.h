@@ -24,6 +24,8 @@ int kbd_uread(struct PCB* pcb, void* buff, int len, int e);
 int kbd_write(void);
 
 // Allows application to set EOF character.
+
+void main(void);
 int kbd_ioctl(int command); 
 
 // Buffer struct for lower and upper half.
@@ -45,5 +47,5 @@ typedef enum {
 char Buffer_Read(Buffer* buff);
 
 // Upper half device driver buffer.
-void Buffer_write(Buffer* buff,  char* data);
+void Buffer_Write(Buffer* buff,  char data);
 

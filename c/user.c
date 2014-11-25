@@ -17,8 +17,8 @@ void root(void) {
     int fd = sysopen(1);
 	int result = sysread(fd, buff, 10);
 
-	int fd2 = sysopen(1);
-	int fd3 = sysopen(0);
+	sysopen(1);
+	sysopen(0);
 	sysclose(fd);
 	fd = sysopen(0);
 
