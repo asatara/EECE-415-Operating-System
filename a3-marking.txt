@@ -1,0 +1,88 @@
+Total before late penalty [/58]
+
+
+Functionality/Design  [/30]
+
+(a) Signaling system: 10
+
+   [/1] - setsup default behaviour
+   [/1] - syskill implementation - 
+   [/1] - syssighandler
+   [/1] - sigreturn
+   [/2] - building of stack - prioritizing signals - blocking out
+   [/1] - sleeping process
+   [/1] - process doing a read
+   [/1] - processes in system calls
+   [/1] - trampoline setup/code
+
+
+(b) Keyboard: [/15]
+   [/1] - Device table
+   [/1] - FD in PCB
+   [/1] - DII open hunting down FD etc 
+   [/1] - DII close - returning FD slot for use
+   [/1] - DII read 
+   [/1] - DII write
+
+     Keyboard specific
+   [/1] - open - 1 keyboard mode 
+   [/1] - close - cleans up and allows keyboard to be reused
+   [/1] - write - should be failure
+   [/1] - read handles buffer filling
+   [/1] - read on empty buffer
+   [/1] - read returns upon carriage return 
+   [/1] - handles EOF properly
+   [/1] - uses interrupts 
+   [/1] - can produce capital letters
+
+
+(c) Test Program: [/5]
+      [/1] - handles echo mode 
+      [/1]- handles non-echo mode  
+      [/1] - signal handling (ignores 20 handles 18)
+      [/1] - deals with EOF properly 
+      [/1] - interrupt of a read by a signal
+
+ Coding Style  Documentation 
+
+
+(a)Code Clarity: [/10]
+     [/2] prototypes declared in kernel.h
+     [/2] Signal handling properly commented
+     [/1] Device independent code has reasonable
+       and consistent structure
+     [/1] Keyboard device specific code is well structured
+     [/2] Code has reasonable layout and indentation
+     [/2] Structure fields of device table and file
+       descriptor table in PCB appropriately
+       commented
+
+(b) Function Descriptions: [/5]
+     3 System calls have comments describing
+       arguments and return values
+     2 Other major functions have descriptions
+
+Test Cases: 1 points each total of [/10]. 
+
+The output was to handed in, in a file named testdoc.txt. For the 1
+mark each test must be appropriately delineated and identified. There
+needs to be a description of what the test is supposed to show and
+what it does (0.5 mark). There should be test output and
+interpretation of the results (0.5 mark). The tests do not have to be
+passed. The 10 test cases are as follows:
+
+
+1. Test showing prioritization of signals
+2. sighandler() test case
+3. sigkill() test case
+4. syssigwait() test case
+5. sysopen() with invalid arguments
+6. syswrite() with an invalid file file descriptor
+7. sysioctl() test for invalid commands
+8. sysread() when there are more characters buffered in 
+   kernel than the read requests
+9. Two test cases for scenarios not covered here or in the test program.
+
+
+Git/Stash [/3] marks.  
+   3 marks if regular commits  1 mark if less than 5 commits. 
